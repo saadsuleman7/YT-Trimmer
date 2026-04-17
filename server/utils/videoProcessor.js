@@ -123,6 +123,7 @@ const downloadVideo = async (options) => {
   const outputFile = path.join(DOWNLOADS_DIR, `${outputId}.${outputExt}`);
   const tempTemplate = path.join(DOWNLOADS_DIR, `${outputId}_temp.%(ext)s`);
 
+  const needsTrim = trimStart !== undefined && trimEnd !== undefined && (trimStart > 0 || trimEnd);
   const args = [];
 
   if (format === 'mp3') {
@@ -130,6 +131,11 @@ const downloadVideo = async (options) => {
   } else {
     const height = parseInt(quality, 10) || 720;
     args.push('-f', `bestvideo[height<=${height}]+bestaudio/best[height<=${height}]`);
+  }
+
+  if (needsTrim) {
+    args.push('--download-sections', `*${trimStart}-${trimEnd}`);
+    args.push('--force-keyframes-at-cuts');
   }
 
   args.push('-o', tempTemplate, '--no-warnings', '--no-playlist', sanitized);
@@ -150,49 +156,34 @@ const downloadVideo = async (options) => {
 
   const downloadedFile = path.join(DOWNLOADS_DIR, files[0]);
 
-  if (trimStart !== undefined && trimEnd !== undefined && (trimStart > 0 || trimEnd)) {
-    const ffmpegArgs = ['-i', downloadedFile, '-ss', String(trimStart)];
-
-    if (trimEnd) {
-      ffmpegArgs.push('-to', String(trimEnd));
-    }
-
-    if (format === 'mp3') {
-      ffmpegArgs.push('-vn', '-acodec', 'libmp3lame');
-    } else {
-      ffmpegArgs.push('-c', 'copy');
-      if (fps) {
-        ffmpegArgs.splice(ffmpegArgs.indexOf('-c'), 2);
-        ffmpegArgs.push('-c:a', 'copy', '-r', String(fps));
-      }
-    }
-
-    ffmpegArgs.push('-y', outputFile);
+  if (fps && format !== 'mp3') {
+    const ffmpegArgs = [
+      '-i', downloadedFile,
+      '-c:v', 'libx264', '-preset', 'ultrafast',
+      '-r', String(fps),
+      '-c:a', 'copy',
+      '-y', outputFile,
+    ];
 
     try {
       await runCommand('ffmpeg', ffmpegArgs, { timeout: 300000 });
-    } catch {
+    } catch (err) {
+      console.error('ffmpeg fps error:', err.message || err);
       try { fs.unlinkSync(downloadedFile); } catch {}
-      throw new Error('Trimming failed');
+      throw new Error('FPS conversion failed');
     }
 
     try { fs.unlinkSync(downloadedFile); } catch {}
-
-    const stats = fs.statSync(outputFile);
-    return {
-      filePath: outputFile,
-      fileName: `${outputId}.${outputExt}`,
-      fileSize: stats.size,
-    };
   } else {
     fs.renameSync(downloadedFile, outputFile);
-    const stats = fs.statSync(outputFile);
-    return {
-      filePath: outputFile,
-      fileName: `${outputId}.${outputExt}`,
-      fileSize: stats.size,
-    };
   }
+
+  const stats = fs.statSync(outputFile);
+  return {
+    filePath: outputFile,
+    fileName: `${outputId}.${outputExt}`,
+    fileSize: stats.size,
+  };
 };
 
 const cleanupOldFiles = () => {
