@@ -34,6 +34,11 @@ router.get('/dashboard', async (req, res) => {
       dailyDownloads,
       topCountries,
       pendingPayments,
+      paymentsByMethod,
+      dailyRevenue,
+      paymentsByPlan,
+      totalPayments,
+      dailyUsers,
     ] = await Promise.all([
       User.countDocuments(),
       User.countDocuments({ isPremium: true }),
@@ -41,11 +46,11 @@ router.get('/dashboard', async (req, res) => {
       Download.countDocuments({ createdAt: { $gte: today } }),
       Download.countDocuments({ createdAt: { $gte: sevenDaysAgo } }),
       Payment.aggregate([
-        { $match: { status: 'completed' } },
+        { $match: { status: { $in: ['completed', 'approved'] } } },
         { $group: { _id: null, total: { $sum: '$amount' } } },
       ]),
       Payment.aggregate([
-        { $match: { status: 'completed', createdAt: { $gte: thirtyDaysAgo } } },
+        { $match: { status: { $in: ['completed', 'approved'] }, createdAt: { $gte: thirtyDaysAgo } } },
         { $group: { _id: null, total: { $sum: '$amount' } } },
       ]),
       Rating.aggregate([
@@ -53,16 +58,13 @@ router.get('/dashboard', async (req, res) => {
         { $group: { _id: null, avg: { $avg: '$stars' } } },
       ]),
       User.countDocuments({ createdAt: { $gte: sevenDaysAgo } }),
-      // Format breakdown
       Download.aggregate([
         { $group: { _id: '$format', count: { $sum: 1 } } },
       ]),
-      // Quality breakdown
       Download.aggregate([
         { $group: { _id: '$quality', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
       ]),
-      // Daily downloads for last 30 days
       Download.aggregate([
         { $match: { createdAt: { $gte: thirtyDaysAgo } } },
         {
@@ -73,7 +75,6 @@ router.get('/dashboard', async (req, res) => {
         },
         { $sort: { _id: 1 } },
       ]),
-      // Top countries
       Download.aggregate([
         { $match: { country: { $ne: null } } },
         { $group: { _id: '$country', count: { $sum: 1 } } },
@@ -81,6 +82,37 @@ router.get('/dashboard', async (req, res) => {
         { $limit: 10 },
       ]),
       Payment.countDocuments({ status: 'pending' }),
+      Payment.aggregate([
+        { $match: { status: { $in: ['completed', 'approved'] } } },
+        { $group: { _id: '$method', count: { $sum: 1 }, total: { $sum: '$amount' } } },
+        { $sort: { total: -1 } },
+      ]),
+      Payment.aggregate([
+        { $match: { status: { $in: ['completed', 'approved'] }, createdAt: { $gte: thirtyDaysAgo } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+            total: { $sum: '$amount' },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]),
+      Payment.aggregate([
+        { $match: { status: { $in: ['completed', 'approved'] } } },
+        { $group: { _id: '$plan', count: { $sum: 1 }, total: { $sum: '$amount' } } },
+      ]),
+      Payment.countDocuments({ status: { $in: ['completed', 'approved'] } }),
+      User.aggregate([
+        { $match: { createdAt: { $gte: thirtyDaysAgo } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]),
     ]);
 
     res.json({
@@ -101,6 +133,11 @@ router.get('/dashboard', async (req, res) => {
         qualityStats: qualityStats.map(q => ({ quality: q._id, count: q.count })),
         dailyDownloads: dailyDownloads.map(d => ({ date: d._id, count: d.count })),
         topCountries: topCountries.map(c => ({ country: c._id, count: c.count })),
+        paymentsByMethod: paymentsByMethod.map(p => ({ method: p._id, count: p.count, total: p.total })),
+        dailyRevenue: dailyRevenue.map(d => ({ date: d._id, total: d.total, count: d.count })),
+        paymentsByPlan: paymentsByPlan.map(p => ({ plan: p._id, count: p.count, total: p.total })),
+        totalPayments,
+        dailyUsers: dailyUsers.map(d => ({ date: d._id, count: d.count })),
       },
     });
   } catch (error) {

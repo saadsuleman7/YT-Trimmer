@@ -9,6 +9,7 @@ const AdminLayout = () => {
     { to: '/admin/payments', icon: <FiCreditCard size={18} />, label: 'Payments' },
     { to: '/admin/reviews', icon: <FiStar size={18} />, label: 'Reviews' },
     { to: '/admin/downloads', icon: <FiDownload size={18} />, label: 'Downloads' },
+    { to: '/admin/settings', icon: <FiSettings size={18} />, label: 'Settings' },
   ];
 
   return (
