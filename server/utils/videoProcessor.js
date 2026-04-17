@@ -93,6 +93,8 @@ const fetchMetadata = async (url) => {
       audioFormats: formats.filter(f => !f.hasVideo && f.hasAudio),
     };
   } catch (error) {
+    console.error('yt-dlp error:', error.message || error);
+    if (error.stderr) console.error('yt-dlp stderr:', error.stderr);
     if (error.message === 'Invalid URL' || error.message === 'No metadata returned') {
       throw error;
     }
@@ -126,7 +128,8 @@ const downloadVideo = async (options) => {
 
   try {
     await runCommand('yt-dlp', args, { timeout: 300000 });
-  } catch {
+  } catch (err) {
+    console.error('yt-dlp download error:', err.message || err);
     throw new Error('Download failed');
   }
 
