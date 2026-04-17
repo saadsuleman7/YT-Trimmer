@@ -80,11 +80,12 @@ const fetchMetadata = async (url) => {
     const availableQualities = Array.from(qualityMap.values())
       .sort((a, b) => (b.height || 0) - (a.height || 0));
 
-    const fpsSet = new Set();
+    const standardFps = [24, 30, 48, 60, 120];
+    let maxVideoFps = 0;
     formats.forEach(f => {
-      if (f.hasVideo && f.fps) fpsSet.add(f.fps);
+      if (f.hasVideo && f.fps && f.fps > maxVideoFps) maxVideoFps = f.fps;
     });
-    const availableFps = Array.from(fpsSet).sort((a, b) => a - b);
+    const availableFps = standardFps.filter(fps => fps <= (maxVideoFps || 30));
 
     return {
       title: data.title,
