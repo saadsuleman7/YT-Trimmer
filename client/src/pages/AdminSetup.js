@@ -81,9 +81,6 @@ const AdminSetup = () => {
                   className="input-field pl-10"
                 />
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Default key: yt-trimmer-admin-2025
-              </p>
             </div>
 
             <button
