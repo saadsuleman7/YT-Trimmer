@@ -170,4 +170,31 @@ router.put('/settings', protect, [
   }
 });
 
+// POST /api/auth/setup-admin - One-time admin setup
+router.post('/setup-admin', [
+  body('email').isEmail().normalizeEmail().withMessage('Please provide a valid email'),
+  body('secret').notEmpty().withMessage('Setup secret is required'),
+], validate, async (req, res) => {
+  try {
+    const { email, secret } = req.body;
+    const setupSecret = process.env.ADMIN_SETUP_SECRET || 'yt-trimmer-admin-2025';
+
+    if (secret !== setupSecret) {
+      return res.status(403).json({ error: 'Invalid setup secret' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found. Please sign up first.' });
+    }
+
+    user.role = 'admin';
+    await user.save();
+
+    res.json({ message: `${user.username} is now an admin! Please log out and log back in.` });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error during admin setup' });
+  }
+});
+
 module.exports = router;
