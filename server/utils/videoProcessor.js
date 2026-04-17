@@ -80,6 +80,12 @@ const fetchMetadata = async (url) => {
     const availableQualities = Array.from(qualityMap.values())
       .sort((a, b) => (b.height || 0) - (a.height || 0));
 
+    const fpsSet = new Set();
+    formats.forEach(f => {
+      if (f.hasVideo && f.fps) fpsSet.add(f.fps);
+    });
+    const availableFps = Array.from(fpsSet).sort((a, b) => a - b);
+
     return {
       title: data.title,
       thumbnail: data.thumbnail,
@@ -90,6 +96,7 @@ const fetchMetadata = async (url) => {
       description: data.description ? data.description.substring(0, 500) : '',
       url: sanitized,
       formats: availableQualities,
+      availableFps,
       audioFormats: formats.filter(f => !f.hasVideo && f.hasAudio),
     };
   } catch (error) {

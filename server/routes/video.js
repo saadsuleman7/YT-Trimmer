@@ -22,13 +22,20 @@ router.post('/metadata', optionalAuth, [
 
     const filteredFormats = metadata.formats.map(f => ({
       ...f,
-      isLocked: f.height > maxHeight || (f.fps && f.fps > maxFps),
-      requiresPremium: f.height > 720 || (f.fps && f.fps > 24),
+      isLocked: f.height > maxHeight,
+      requiresPremium: f.height > 720,
+    }));
+
+    const fpsOptions = (metadata.availableFps || []).map(fps => ({
+      fps,
+      isLocked: fps > maxFps,
+      requiresPremium: fps > 24,
     }));
 
     res.json({
       ...metadata,
       formats: filteredFormats,
+      fpsOptions,
       userTier: isPremium ? 'premium' : (isGuest ? 'guest' : 'free'),
     });
   } catch (error) {

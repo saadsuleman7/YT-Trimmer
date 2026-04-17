@@ -14,6 +14,7 @@ const DownloadTool = () => {
   const [videoData, setVideoData] = useState(null);
   const [format, setFormat] = useState('mp4');
   const [selectedQuality, setSelectedQuality] = useState(null);
+  const [selectedFps, setSelectedFps] = useState(null);
   const [trimStart, setTrimStart] = useState(0);
   const [trimEnd, setTrimEnd] = useState(0);
   const [trimStartStr, setTrimStartStr] = useState('00:00:00');
@@ -43,6 +44,11 @@ const DownloadTool = () => {
       if (available.length > 0) {
         setSelectedQuality(available[0]);
       }
+      // Select default FPS (highest unlocked)
+      const availableFps = (res.data.fpsOptions || []).filter(f => !f.isLocked);
+      if (availableFps.length > 0) {
+        setSelectedFps(availableFps[availableFps.length - 1]);
+      }
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to fetch video information');
     } finally {
@@ -56,6 +62,14 @@ const DownloadTool = () => {
       return;
     }
     setSelectedQuality(quality);
+  };
+
+  const handleFpsSelect = (fpsOption) => {
+    if (fpsOption.isLocked) {
+      setShowUpgradePrompt(true);
+      return;
+    }
+    setSelectedFps(fpsOption);
   };
 
   const handleTrimStartChange = (value) => {
@@ -95,7 +109,7 @@ const DownloadTool = () => {
         url: videoData.url,
         format,
         quality: selectedQuality.height?.toString() || '720',
-        fps: selectedQuality.fps || 24,
+        fps: selectedFps?.fps || 24,
         trimStart,
         trimEnd,
         title: videoData.title,
@@ -323,7 +337,7 @@ const DownloadTool = () => {
             {format === 'mp4' && videoData.formats && (
               <div>
                 <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">
-                  Select Quality
+                  Select Resolution
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   {videoData.formats.map((q, i) => (
@@ -342,8 +356,41 @@ const DownloadTool = () => {
                         <span>{q.quality}</span>
                         {q.isLocked && <FiLock size={14} className="text-gray-400" />}
                       </div>
-                      {q.fps && <span className="text-xs text-gray-500">{q.fps}fps</span>}
                       {q.requiresPremium && (
+                        <span className="absolute -top-2 -right-2 bg-gradient-primary text-dark-900 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                          PRO
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* FPS selection */}
+            {format === 'mp4' && videoData.fpsOptions && videoData.fpsOptions.length > 0 && (
+              <div className="mt-6">
+                <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">
+                  Select Frame Rate (FPS)
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {videoData.fpsOptions.map((f, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleFpsSelect(f)}
+                      className={`relative p-3 rounded-xl border-2 text-sm font-medium transition-all ${
+                        selectedFps?.fps === f.fps
+                          ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+                          : f.isLocked
+                            ? 'border-gray-200 dark:border-dark-600 bg-gray-50 dark:bg-dark-800 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                            : 'border-gray-200 dark:border-dark-600 hover:border-primary-400 text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>{f.fps} FPS</span>
+                        {f.isLocked && <FiLock size={14} className="text-gray-400" />}
+                      </div>
+                      {f.requiresPremium && (
                         <span className="absolute -top-2 -right-2 bg-gradient-primary text-dark-900 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                           PRO
                         </span>
