@@ -57,7 +57,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-3">
             {/* Discord */}
             <a
-              href="https://discord.gg/your-server"
+              href="https://discord.gg/SVbCbYQ7xN"
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-700 hover:text-indigo-500 transition-colors"

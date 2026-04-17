@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaDiscord, FaGithub, FaTwitter } from 'react-icons/fa';
+import { FaDiscord } from 'react-icons/fa';
 
 const Footer = () => {
   return (
@@ -19,15 +19,9 @@ const Footer = () => {
               Download and trim videos with ease. Free and premium options available for everyone.
             </p>
             <div className="flex space-x-3">
-              <a href="https://discord.gg/your-server" target="_blank" rel="noopener noreferrer"
+              <a href="https://discord.gg/SVbCbYQ7xN" target="_blank" rel="noopener noreferrer"
                 className="p-2 rounded-lg bg-gray-100 dark:bg-dark-800 text-gray-600 dark:text-gray-400 hover:text-indigo-500 transition-colors">
                 <FaDiscord size={18} />
-              </a>
-              <a href="#" className="p-2 rounded-lg bg-gray-100 dark:bg-dark-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                <FaGithub size={18} />
-              </a>
-              <a href="#" className="p-2 rounded-lg bg-gray-100 dark:bg-dark-800 text-gray-600 dark:text-gray-400 hover:text-blue-400 transition-colors">
-                <FaTwitter size={18} />
               </a>
             </div>
           </div>

@@ -177,7 +177,7 @@ const Home = () => {
               Get help, suggest features, and connect with other users on Discord.
             </p>
             <a
-              href="https://discord.gg/your-server"
+              href="https://discord.gg/SVbCbYQ7xN"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center space-x-2 bg-white text-indigo-600 font-semibold px-8 py-3 rounded-xl hover:bg-gray-100 transition-colors"
