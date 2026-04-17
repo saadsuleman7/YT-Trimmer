@@ -82,8 +82,10 @@ const fetchMetadata = async (url) => {
 
     const standardFps = [24, 30, 48, 60, 120];
     let maxVideoFps = 0;
+    let maxVideoHeight = 0;
     formats.forEach(f => {
       if (f.hasVideo && f.fps && f.fps > maxVideoFps) maxVideoFps = f.fps;
+      if (f.hasVideo && f.height && f.height > maxVideoHeight) maxVideoHeight = f.height;
     });
     const availableFps = standardFps.filter(fps => fps <= (maxVideoFps || 30));
 
@@ -96,8 +98,12 @@ const fetchMetadata = async (url) => {
       viewCount: data.view_count,
       description: data.description ? data.description.substring(0, 500) : '',
       url: sanitized,
+      videoId: data.id || null,
+      extractor: data.extractor_key || data.extractor || null,
       formats: availableQualities,
       availableFps,
+      maxVideoFps: maxVideoFps || 30,
+      maxVideoHeight: maxVideoHeight || 720,
       audioFormats: formats.filter(f => !f.hasVideo && f.hasAudio),
     };
   } catch (error) {
@@ -159,7 +165,7 @@ const downloadVideo = async (options) => {
   if (fps && format !== 'mp3') {
     const ffmpegArgs = [
       '-i', downloadedFile,
-      '-c:v', 'libx264', '-preset', 'ultrafast',
+      '-c:v', 'libx264', '-preset', 'medium', '-crf', '18',
       '-r', String(fps),
       '-c:a', 'copy',
       '-y', outputFile,

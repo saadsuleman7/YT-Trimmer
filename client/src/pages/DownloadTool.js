@@ -1,7 +1,7 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
-import { FiSearch, FiDownload, FiLock, FiMusic, FiFilm, FiClock } from 'react-icons/fi';
+import { FiSearch, FiDownload, FiLock, FiMusic, FiFilm, FiClock, FiInfo } from 'react-icons/fi';
 import api from '../utils/api';
 import { formatTime, parseTime, isQualityLocked } from '../utils/helpers';
 import RatingPopup from '../components/ratings/RatingPopup';
@@ -21,8 +21,49 @@ const DownloadTool = () => {
   const [trimEndStr, setTrimEndStr] = useState('00:00:00');
   const [showRating, setShowRating] = useState(false);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+  const [playerReady, setPlayerReady] = useState(false);
   const videoRef = useRef(null);
   const sliderRef = useRef(null);
+  const playerRef = useRef(null);
+  const draggingRef = useRef(null);
+
+  useEffect(() => {
+    if (!videoData?.videoId || videoData.extractor !== 'Youtube') return;
+
+    if (window.YT && window.YT.Player) {
+      createPlayer();
+      return;
+    }
+
+    if (!document.getElementById('yt-iframe-api')) {
+      const tag = document.createElement('script');
+      tag.id = 'yt-iframe-api';
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    }
+
+    window.onYouTubeIframeAPIReady = createPlayer;
+    return () => { window.onYouTubeIframeAPIReady = null; };
+  }, [videoData?.videoId]);
+
+  const createPlayer = () => {
+    if (playerRef.current) {
+      playerRef.current.destroy();
+    }
+    playerRef.current = new window.YT.Player('yt-player', {
+      videoId: videoData.videoId,
+      playerVars: { controls: 1, modestbranding: 1, rel: 0 },
+      events: {
+        onReady: () => setPlayerReady(true),
+      },
+    });
+  };
+
+  const seekPlayer = (seconds) => {
+    if (playerRef.current && playerReady && playerRef.current.seekTo) {
+      playerRef.current.seekTo(seconds, true);
+    }
+  };
 
   const fetchMetadata = async () => {
     if (!url.trim()) {
@@ -32,19 +73,24 @@ const DownloadTool = () => {
 
     setLoading(true);
     setVideoData(null);
+    setPlayerReady(false);
+    if (playerRef.current) {
+      playerRef.current.destroy();
+      playerRef.current = null;
+    }
 
     try {
       const res = await api.post('/videos/metadata', { url: url.trim() });
       setVideoData(res.data);
+      setTrimStart(0);
+      setTrimStartStr('00:00:00');
       setTrimEnd(res.data.duration || 0);
       setTrimEndStr(formatTime(res.data.duration || 0));
 
-      // Select default quality (best available for user tier)
       const available = res.data.formats.filter(f => !f.isLocked);
       if (available.length > 0) {
         setSelectedQuality(available[0]);
       }
-      // Select default FPS (highest unlocked)
       const availableFps = (res.data.fpsOptions || []).filter(f => !f.isLocked);
       if (availableFps.length > 0) {
         setSelectedFps(availableFps[availableFps.length - 1]);
@@ -76,19 +122,23 @@ const DownloadTool = () => {
     const seconds = Math.max(0, Math.min(value, trimEnd - 1));
     setTrimStart(seconds);
     setTrimStartStr(formatTime(seconds));
+    seekPlayer(seconds);
   };
 
   const handleTrimEndChange = (value) => {
     const seconds = Math.max(trimStart + 1, Math.min(value, videoData?.duration || 0));
     setTrimEnd(seconds);
     setTrimEndStr(formatTime(seconds));
+    seekPlayer(seconds);
   };
 
   const handleStartTimeInput = (str) => {
     setTrimStartStr(str);
     const seconds = parseTime(str);
     if (!isNaN(seconds)) {
-      setTrimStart(Math.max(0, Math.min(seconds, trimEnd - 1)));
+      const clamped = Math.max(0, Math.min(seconds, trimEnd - 1));
+      setTrimStart(clamped);
+      seekPlayer(clamped);
     }
   };
 
@@ -96,7 +146,9 @@ const DownloadTool = () => {
     setTrimEndStr(str);
     const seconds = parseTime(str);
     if (!isNaN(seconds)) {
-      setTrimEnd(Math.max(trimStart + 1, Math.min(seconds, videoData?.duration || 0)));
+      const clamped = Math.max(trimStart + 1, Math.min(seconds, videoData?.duration || 0));
+      setTrimEnd(clamped);
+      seekPlayer(clamped);
     }
   };
 
@@ -116,7 +168,6 @@ const DownloadTool = () => {
         thumbnail: videoData.thumbnail,
       });
 
-      // Trigger download
       const downloadUrl = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${res.data.downloadUrl}`;
       const link = document.createElement('a');
       link.href = downloadUrl;
@@ -138,22 +189,56 @@ const DownloadTool = () => {
     }
   };
 
-  const handleSliderChange = useCallback((e) => {
+  const getSliderTime = useCallback((e) => {
     const rect = sliderRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
     const percent = Math.max(0, Math.min(1, x / rect.width));
-    const time = percent * (videoData?.duration || 0);
+    return Math.floor(percent * (videoData?.duration || 0));
+  }, [videoData]);
 
-    // Determine which handle is closer
+  const handleSliderMouseDown = useCallback((e) => {
+    e.preventDefault();
+    const time = getSliderTime(e);
     const distToStart = Math.abs(time - trimStart);
     const distToEnd = Math.abs(time - trimEnd);
+    draggingRef.current = distToStart < distToEnd ? 'start' : 'end';
 
-    if (distToStart < distToEnd) {
-      handleTrimStartChange(Math.floor(time));
+    if (draggingRef.current === 'start') {
+      handleTrimStartChange(time);
     } else {
-      handleTrimEndChange(Math.floor(time));
+      handleTrimEndChange(time);
     }
-  }, [trimStart, trimEnd, videoData]);
+  }, [trimStart, trimEnd, getSliderTime]);
+
+  const handleSliderMove = useCallback((e) => {
+    if (!draggingRef.current) return;
+    e.preventDefault();
+    const time = getSliderTime(e);
+    if (draggingRef.current === 'start') {
+      handleTrimStartChange(time);
+    } else {
+      handleTrimEndChange(time);
+    }
+  }, [getSliderTime]);
+
+  const handleSliderUp = useCallback(() => {
+    draggingRef.current = null;
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('mousemove', handleSliderMove);
+    window.addEventListener('mouseup', handleSliderUp);
+    window.addEventListener('touchmove', handleSliderMove, { passive: false });
+    window.addEventListener('touchend', handleSliderUp);
+    return () => {
+      window.removeEventListener('mousemove', handleSliderMove);
+      window.removeEventListener('mouseup', handleSliderUp);
+      window.removeEventListener('touchmove', handleSliderMove);
+      window.removeEventListener('touchend', handleSliderUp);
+    };
+  }, [handleSliderMove, handleSliderUp]);
+
+  const isYouTube = videoData?.extractor === 'Youtube' && videoData?.videoId;
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 animate-fade-in">
@@ -198,18 +283,22 @@ const DownloadTool = () => {
       {/* Video info + controls */}
       {videoData && (
         <div className="space-y-6 animate-slide-up">
-          {/* Video preview */}
+          {/* Video preview / player */}
           <div className="card p-6">
             <div className="flex flex-col md:flex-row gap-6">
-              {videoData.thumbnail && (
-                <div className="w-full md:w-72 flex-shrink-0">
+              <div className="w-full md:w-96 flex-shrink-0">
+                {isYouTube ? (
+                  <div className="aspect-video rounded-xl overflow-hidden bg-black">
+                    <div id="yt-player" className="w-full h-full" />
+                  </div>
+                ) : videoData.thumbnail ? (
                   <img
                     src={videoData.thumbnail}
                     alt={videoData.title}
                     className="w-full rounded-xl object-cover"
                   />
-                </div>
-              )}
+                ) : null}
+              </div>
               <div className="flex-1 min-w-0">
                 <h2 className="text-xl font-bold mb-2 truncate">{videoData.title}</h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
@@ -239,8 +328,9 @@ const DownloadTool = () => {
             <div className="mb-6">
               <div
                 ref={sliderRef}
-                className="relative h-10 bg-gray-200 dark:bg-dark-700 rounded-full cursor-pointer select-none"
-                onClick={handleSliderChange}
+                className="relative h-10 bg-gray-200 dark:bg-dark-700 rounded-full cursor-pointer select-none touch-none"
+                onMouseDown={handleSliderMouseDown}
+                onTouchStart={handleSliderMouseDown}
               >
                 {/* Selected range */}
                 <div
@@ -364,6 +454,12 @@ const DownloadTool = () => {
                     </button>
                   ))}
                 </div>
+                {videoData.maxVideoHeight && (
+                  <p className="mt-3 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                    <FiInfo size={14} />
+                    This video supports up to {videoData.maxVideoHeight}p resolution
+                  </p>
+                )}
               </div>
             )}
 
@@ -398,6 +494,12 @@ const DownloadTool = () => {
                     </button>
                   ))}
                 </div>
+                {videoData.maxVideoFps && (
+                  <p className="mt-3 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                    <FiInfo size={14} />
+                    This video supports up to {videoData.maxVideoFps} FPS
+                  </p>
+                )}
               </div>
             )}
           </div>
