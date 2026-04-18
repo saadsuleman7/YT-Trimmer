@@ -10,6 +10,7 @@ const validate = require('../middleware/validate');
 const Payment = require('../models/Payment');
 const PaymentConfig = require('../models/PaymentConfig');
 const User = require('../models/User');
+const { sendApprovalEmail } = require('../utils/emailService');
 
 // Configure multer for proof uploads
 const uploadsDir = path.join(__dirname, '..', 'uploads', 'proofs');
@@ -137,29 +138,55 @@ router.post('/webhook', async (req, res) => {
   res.json({ received: true });
 });
 
-// POST /api/payments/manual - Manual payment submission
+// POST /api/payments/manual - Manual payment submission (auto-approved on exact amount)
 router.post('/manual', protect, upload.single('proof'), [
   body('plan').isIn(['weekly', 'monthly']).withMessage('Invalid plan'),
   body('method').isIn(['crypto', 'easypaisa', 'paypal', 'bank_transfer']).withMessage('Invalid payment method'),
   body('transactionId').trim().notEmpty().withMessage('Transaction ID is required'),
+  body('amountPaid').notEmpty().withMessage('Amount paid is required'),
   body('senderDetails').optional().trim(),
 ], validate, async (req, res) => {
   try {
-    const { plan, method, transactionId, senderDetails } = req.body;
+    const { plan, method, transactionId, senderDetails, amountPaid } = req.body;
+    const expectedAmount = PLANS[plan].price / 100;
+    const claimedAmount = parseFloat(amountPaid);
+
+    if (isNaN(claimedAmount) || Math.abs(claimedAmount - expectedAmount) > 0.001) {
+      return res.status(400).json({
+        error: `You must pay exactly $${expectedAmount.toFixed(2)} for the ${plan} plan. No more, no less.`,
+      });
+    }
+
+    const expiry = new Date();
+    if (plan === 'weekly') expiry.setDate(expiry.getDate() + 7);
+    else expiry.setMonth(expiry.getMonth() + 1);
 
     const payment = await Payment.create({
       user: req.user._id,
-      amount: PLANS[plan].price / 100,
+      amount: expectedAmount,
       plan,
       method,
-      status: 'pending',
+      status: 'approved',
       transactionId,
       senderDetails: senderDetails || null,
       proofImage: req.file ? `/uploads/proofs/${req.file.filename}` : null,
+      reviewedAt: new Date(),
+      adminNotes: 'Auto-approved: exact amount matched',
     });
 
+    await User.findByIdAndUpdate(req.user._id, {
+      isPremium: true,
+      premiumPlan: plan,
+      premiumExpiry: expiry,
+      warningEmailSent: false,
+    });
+
+    const user = await User.findById(req.user._id);
+    await sendApprovalEmail(user, payment);
+
     res.status(201).json({
-      message: 'Payment submitted for review. You will be notified once approved.',
+      message: 'Payment verified! Your premium is now active.',
+      autoApproved: true,
       payment: {
         id: payment._id,
         status: payment.status,
@@ -169,6 +196,21 @@ router.post('/manual', protect, upload.single('proof'), [
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to submit payment' });
+  }
+});
+
+// DELETE /api/payments/cancel-subscription
+router.delete('/cancel-subscription', protect, async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(req.user._id, {
+      isPremium: false,
+      premiumPlan: null,
+      premiumExpiry: null,
+      warningEmailSent: false,
+    });
+    res.json({ message: 'Subscription cancelled successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to cancel subscription' });
   }
 });
 

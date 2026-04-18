@@ -170,7 +170,7 @@ const Pricing = () => {
         <p className="text-sm text-gray-500 dark:text-gray-400">
           We accept Stripe (Cards), PayPal, Crypto, Easypaisa, and Bank Transfer.
           <br />
-          Manual payments are reviewed within 24 hours.
+          Manual payments with the exact amount are verified instantly.
         </p>
       </div>
 

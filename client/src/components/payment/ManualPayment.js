@@ -28,6 +28,8 @@ const ManualPayment = ({ plan, onClose }) => {
     { id: 'bank_transfer', label: 'Bank Transfer', icon: '🏦' },
   ];
 
+  const priceNum = plan === 'weekly' ? 2 : 6;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -48,13 +50,18 @@ const ManualPayment = ({ plan, onClose }) => {
       formData.append('method', method);
       formData.append('transactionId', transactionId);
       formData.append('senderDetails', senderDetails);
+      formData.append('amountPaid', priceNum.toString());
       if (proof) formData.append('proof', proof);
 
-      await api.post('/payments/manual', formData, {
+      const res = await api.post('/payments/manual', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      toast.success('Payment submitted! You will be notified once approved.');
+      if (res.data.autoApproved) {
+        toast.success('Payment verified! Your premium is now active. Please log out and log back in.');
+      } else {
+        toast.success('Payment submitted! You will be notified once approved.');
+      }
       onClose();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to submit payment');
@@ -81,8 +88,14 @@ const ManualPayment = ({ plan, onClose }) => {
           </div>
           <h3 className="text-xl font-bold">Manual Payment</h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            {plan === 'weekly' ? 'Weekly' : 'Monthly'} Premium - {price}
+            {plan === 'weekly' ? 'Weekly' : 'Monthly'} Premium
           </p>
+          <div className="mt-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-xl p-3">
+            <p className="text-amber-800 dark:text-amber-300 font-bold text-lg">{price}</p>
+            <p className="text-amber-700 dark:text-amber-400 text-xs mt-1">
+              Only the exact amount is accepted. Sending more or less will not activate your premium.
+            </p>
+          </div>
         </div>
 
         {!isAuthenticated ? (
@@ -196,7 +209,7 @@ const ManualPayment = ({ plan, onClose }) => {
             </button>
 
             <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-              Manual payments are reviewed within 24 hours. You'll be notified once approved.
+              Payments with the exact amount are verified instantly. After submitting, log out and log back in.
             </p>
           </form>
         )}

@@ -38,28 +38,16 @@ const Contact = () => {
         <div className="space-y-4">
           <div className="card p-6">
             <div className="flex items-center space-x-3 mb-3">
-              <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-xl flex items-center justify-center">
-                <FiMail className="text-primary-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Email</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">support@yt-trimmer.com</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="card p-6">
-            <div className="flex items-center space-x-3 mb-3">
               <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center">
                 <FaDiscord className="text-indigo-600" />
               </div>
               <div>
-                <h3 className="font-semibold">Discord</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Join our community</p>
+                <h3 className="font-semibold">Support</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Join Discord for help &amp; complaints</p>
               </div>
             </div>
             <a
-              href="https://discord.gg/your-server"
+              href="https://discord.gg/SVbCbYQ7xN"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-outline text-sm w-full text-center block mt-3"

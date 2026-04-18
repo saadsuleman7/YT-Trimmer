@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import api from '../utils/api';
 import { formatDate, formatDateTime } from '../utils/helpers';
-import { FiUser, FiMail, FiLock, FiSave, FiClock, FiDownload, FiStar, FiTrash2 } from 'react-icons/fi';
+import { FiUser, FiMail, FiLock, FiSave, FiClock, FiDownload, FiStar, FiTrash2, FiXCircle, FiRefreshCw } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 
 const AccountSettings = () => {
@@ -61,18 +61,43 @@ const AccountSettings = () => {
 
             <div className="mt-4 space-y-2">
               {user?.isPremium ? (
-                <div className="bg-gradient-primary text-dark-900 px-3 py-1.5 rounded-lg text-sm font-bold">
-                  PREMIUM - {user.premiumPlan}
-                </div>
+                <>
+                  <div className="bg-gradient-primary text-dark-900 px-3 py-1.5 rounded-lg text-sm font-bold">
+                    PREMIUM - {user.premiumPlan}
+                  </div>
+                  {user.premiumExpiry && (() => {
+                    const daysLeft = Math.ceil((new Date(user.premiumExpiry) - new Date()) / (1000 * 60 * 60 * 24));
+                    return (
+                      <p className={`text-xs font-medium ${daysLeft <= 3 ? 'text-red-500' : 'text-gray-500'}`}>
+                        {daysLeft > 0 ? `${daysLeft} day${daysLeft !== 1 ? 's' : ''} remaining` : 'Expired'}
+                      </p>
+                    );
+                  })()}
+                  <Link to="/pricing" className="flex items-center justify-center space-x-1.5 btn-outline text-xs py-1.5">
+                    <FiRefreshCw size={12} />
+                    <span>Renew Now</span>
+                  </Link>
+                  <button
+                    onClick={async () => {
+                      if (!window.confirm('Cancel your premium subscription? You will lose premium access immediately.')) return;
+                      try {
+                        await api.delete('/payments/cancel-subscription');
+                        updateUser({ ...user, isPremium: false, premiumPlan: null, premiumExpiry: null });
+                        toast.success('Subscription cancelled');
+                      } catch {
+                        toast.error('Failed to cancel subscription');
+                      }
+                    }}
+                    className="flex items-center justify-center space-x-1.5 w-full text-xs text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <FiXCircle size={12} />
+                    <span>Cancel Subscription</span>
+                  </button>
+                </>
               ) : (
                 <Link to="/pricing" className="block btn-outline text-sm">
                   Upgrade to Premium
                 </Link>
-              )}
-              {user?.premiumExpiry && (
-                <p className="text-xs text-gray-500">
-                  Expires: {formatDate(user.premiumExpiry)}
-                </p>
               )}
             </div>
 

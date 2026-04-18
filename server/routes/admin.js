@@ -7,6 +7,7 @@ const Payment = require('../models/Payment');
 const Rating = require('../models/Rating');
 const Contact = require('../models/Contact');
 const PaymentConfig = require('../models/PaymentConfig');
+const { sendApprovalEmail, sendRejectionEmail } = require('../utils/emailService');
 
 // All admin routes require auth + admin role
 router.use(protect, adminOnly);
@@ -323,7 +324,11 @@ router.put('/payments/:id/approve', async (req, res) => {
       isPremium: true,
       premiumPlan: payment.plan,
       premiumExpiry: expiry,
+      warningEmailSent: false,
     });
+
+    const user = await User.findById(payment.user);
+    if (user) await sendApprovalEmail(user, payment);
 
     res.json({ message: 'Payment approved and premium activated', payment });
   } catch (error) {
@@ -345,6 +350,9 @@ router.put('/payments/:id/reject', async (req, res) => {
     payment.reviewedAt = new Date();
     payment.adminNotes = req.body.notes || '';
     await payment.save();
+
+    const user = await User.findById(payment.user);
+    if (user) await sendRejectionEmail(user, payment);
 
     res.json({ message: 'Payment rejected', payment });
   } catch (error) {

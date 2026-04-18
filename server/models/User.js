@@ -72,6 +72,10 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  warningEmailSent: {
+    type: Boolean,
+    default: false,
+  },
 }, {
   timestamps: true,
 });

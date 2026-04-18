@@ -19,6 +19,9 @@ const app = express();
 // Connect to database
 connectDB();
 
+// Subscription expiry checker (runs daily at midnight)
+require('./utils/subscriptionCron');
+
 // Security middleware
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({
