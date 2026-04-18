@@ -20,7 +20,7 @@ const app = express();
 connectDB();
 
 // Subscription expiry checker (runs daily at midnight)
-require('./utils/subscriptionCron');
+try { require('./utils/subscriptionCron'); } catch (err) { console.error('[Cron] Failed to start:', err.message); }
 
 // Security middleware
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
