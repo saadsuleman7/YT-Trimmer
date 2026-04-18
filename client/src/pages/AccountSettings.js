@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import api from '../utils/api';
 import { formatDate, formatDateTime } from '../utils/helpers';
-import { FiUser, FiMail, FiLock, FiSave, FiClock, FiDownload, FiStar } from 'react-icons/fi';
+import { FiUser, FiMail, FiLock, FiSave, FiClock, FiDownload, FiStar, FiTrash2 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 
 const AccountSettings = () => {
@@ -160,10 +160,30 @@ const AccountSettings = () => {
 
           {/* Download History */}
           <div className="card p-6">
-            <h3 className="font-semibold text-lg mb-4 flex items-center space-x-2">
-              <FiClock />
-              <span>Download History</span>
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-lg flex items-center space-x-2">
+                <FiClock />
+                <span>Download History</span>
+              </h3>
+              {downloads.length > 0 && (
+                <button
+                  onClick={async () => {
+                    if (!window.confirm('Are you sure you want to clear all download history?')) return;
+                    try {
+                      await api.delete('/downloads/history');
+                      setDownloads([]);
+                      toast.success('Download history cleared');
+                    } catch {
+                      toast.error('Failed to clear history');
+                    }
+                  }}
+                  className="flex items-center space-x-1.5 text-sm text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  <FiTrash2 size={14} />
+                  <span>Clear All</span>
+                </button>
+              )}
+            </div>
 
             {loadingHistory ? (
               <div className="text-center py-8">

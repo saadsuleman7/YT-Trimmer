@@ -115,6 +115,38 @@ router.get('/dashboard', async (req, res) => {
       ]),
     ]);
 
+    const [
+      bannedUsers,
+      failedDownloads,
+      completedDownloads,
+      fpsStats,
+      topVideos,
+      recentPayments,
+    ] = await Promise.all([
+      User.countDocuments({ isBanned: true }),
+      Download.countDocuments({ status: 'failed' }),
+      Download.countDocuments({ status: 'completed' }),
+      Download.aggregate([
+        { $match: { fps: { $ne: null } } },
+        { $group: { _id: '$fps', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ]),
+      Download.aggregate([
+        { $group: { _id: '$videoTitle', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 10 },
+      ]),
+      Payment.find()
+        .populate('user', 'username email')
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .lean(),
+    ]);
+
+    const conversionRate = totalUsers > 0 ? ((premiumUsers / totalUsers) * 100).toFixed(1) : 0;
+    const successRate = (completedDownloads + failedDownloads) > 0
+      ? ((completedDownloads / (completedDownloads + failedDownloads)) * 100).toFixed(1) : 100;
+
     res.json({
       stats: {
         totalUsers,
@@ -127,6 +159,9 @@ router.get('/dashboard', async (req, res) => {
         averageRating: avgRating[0] ? Math.round(avgRating[0].avg * 10) / 10 : 0,
         newUsersThisWeek: recentUsers,
         pendingPayments,
+        bannedUsers,
+        conversionRate,
+        successRate,
       },
       analytics: {
         formatStats: formatStats.map(f => ({ format: f._id, count: f.count })),
@@ -138,6 +173,9 @@ router.get('/dashboard', async (req, res) => {
         paymentsByPlan: paymentsByPlan.map(p => ({ plan: p._id, count: p.count, total: p.total })),
         totalPayments,
         dailyUsers: dailyUsers.map(d => ({ date: d._id, count: d.count })),
+        fpsStats: fpsStats.map(f => ({ fps: f._id, count: f.count })),
+        topVideos: topVideos.map(v => ({ title: v._id, count: v.count })),
+        recentPayments,
       },
     });
   } catch (error) {

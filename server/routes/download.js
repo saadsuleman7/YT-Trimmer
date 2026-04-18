@@ -141,4 +141,15 @@ router.get('/history', protect, async (req, res) => {
   }
 });
 
+// DELETE /api/downloads/history
+router.delete('/history', protect, async (req, res) => {
+  try {
+    const result = await Download.deleteMany({ user: req.user._id });
+    await User.findByIdAndUpdate(req.user._id, { totalDownloads: 0 });
+    res.json({ message: 'Download history cleared', deleted: result.deletedCount });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to clear download history' });
+  }
+});
+
 module.exports = router;
