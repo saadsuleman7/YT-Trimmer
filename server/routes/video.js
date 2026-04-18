@@ -23,13 +23,13 @@ router.post('/metadata', optionalAuth, [
     const filteredFormats = metadata.formats.map(f => ({
       ...f,
       isLocked: f.height > maxHeight,
-      requiresPremium: f.height > 720,
+      requiresPremium: isPremium ? false : f.height > 720,
     }));
 
     const fpsOptions = (metadata.availableFps || []).map(fps => ({
       fps,
       isLocked: fps > maxFps,
-      requiresPremium: fps > 24,
+      requiresPremium: isPremium ? false : fps > 24,
     }));
 
     res.json({

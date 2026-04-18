@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { FiGrid, FiUsers, FiCreditCard, FiStar, FiDownload, FiSettings, FiGift } from 'react-icons/fi';
+import { FiGrid, FiUsers, FiCreditCard, FiStar, FiDownload, FiSettings, FiGift, FiInbox } from 'react-icons/fi';
 
 const AdminLayout = () => {
   const links = [
@@ -8,6 +8,7 @@ const AdminLayout = () => {
     { to: '/admin/users', icon: <FiUsers size={18} />, label: 'Users' },
     { to: '/admin/payments', icon: <FiCreditCard size={18} />, label: 'Payments' },
     { to: '/admin/reviews', icon: <FiStar size={18} />, label: 'Reviews' },
+    { to: '/admin/inbox', icon: <FiInbox size={18} />, label: 'Inbox' },
     { to: '/admin/downloads', icon: <FiDownload size={18} />, label: 'Downloads' },
     { to: '/admin/promo-codes', icon: <FiGift size={18} />, label: 'Promo Codes' },
     { to: '/admin/settings', icon: <FiSettings size={18} />, label: 'Settings' },

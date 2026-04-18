@@ -33,6 +33,7 @@ import AdminReviews from './pages/admin/ReviewsMod';
 import AdminDownloads from './pages/admin/Downloads';
 import AdminSettings from './pages/admin/Settings';
 import AdminPromoCodes from './pages/admin/PromoCodes';
+import AdminContacts from './pages/admin/Contacts';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, requireAdmin = false }) => {
@@ -78,6 +79,7 @@ const AppRoutes = () => {
         <Route path="users" element={<AdminUsers />} />
         <Route path="payments" element={<AdminPayments />} />
         <Route path="reviews" element={<AdminReviews />} />
+        <Route path="inbox" element={<AdminContacts />} />
         <Route path="downloads" element={<AdminDownloads />} />
         <Route path="promo-codes" element={<AdminPromoCodes />} />
         <Route path="settings" element={<AdminSettings />} />

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { formatDateTime } from '../../utils/helpers';
-import { FiUsers, FiDownload, FiDollarSign, FiStar, FiTrendingUp, FiClock, FiAlertCircle, FiCreditCard, FiUserCheck, FiSlash, FiCheckCircle, FiPercent } from 'react-icons/fi';
+import { FiUsers, FiDownload, FiDollarSign, FiStar, FiTrendingUp, FiClock, FiAlertCircle, FiCreditCard, FiUserCheck, FiSlash, FiCheckCircle, FiPercent, FiFilter, FiRefreshCw } from 'react-icons/fi';
 
 const StatCard = ({ icon, label, value, sub, color = 'primary' }) => {
   const colors = {
@@ -84,13 +84,31 @@ const ProgressBar = ({ items, labelKey, countKey, totalKey, colorClass }) => {
 const Dashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({ from: '', to: '', method: '', region: '' });
+  const [activeFilters, setActiveFilters] = useState({});
 
-  useEffect(() => {
-    api.get('/admin/dashboard')
+  const fetchData = (params = {}) => {
+    setLoading(true);
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => { if (v) query.set(k, v); });
+    api.get(`/admin/dashboard?${query.toString()}`)
       .then(res => setData(res.data))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { fetchData(); }, []);
+
+  const applyFilters = () => {
+    setActiveFilters({ ...filters });
+    fetchData(filters);
+  };
+
+  const resetFilters = () => {
+    setFilters({ from: '', to: '', method: '', region: '' });
+    setActiveFilters({});
+    fetchData();
+  };
 
   if (loading) {
     return (
@@ -111,8 +129,76 @@ const Dashboard = () => {
 
   const { stats, analytics } = data;
 
+  const hasActiveFilters = Object.values(activeFilters).some(v => v);
+
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Filter Controls */}
+      <div className="card p-4">
+        <div className="flex items-center space-x-2 mb-3">
+          <FiFilter size={16} className="text-gray-500" />
+          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Filter Analytics</span>
+          {hasActiveFilters && (
+            <span className="text-xs bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 px-2 py-0.5 rounded-full">Active</span>
+          )}
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">From Date</label>
+            <input
+              type="date"
+              value={filters.from}
+              onChange={(e) => setFilters({ ...filters, from: e.target.value })}
+              className="input-field text-sm py-1.5"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">To Date</label>
+            <input
+              type="date"
+              value={filters.to}
+              onChange={(e) => setFilters({ ...filters, to: e.target.value })}
+              className="input-field text-sm py-1.5"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Payment Method</label>
+            <select
+              value={filters.method}
+              onChange={(e) => setFilters({ ...filters, method: e.target.value })}
+              className="input-field text-sm py-1.5"
+            >
+              <option value="">All Methods</option>
+              <option value="stripe">Stripe</option>
+              <option value="crypto">Crypto</option>
+              <option value="easypaisa">Easypaisa</option>
+              <option value="paypal">PayPal</option>
+              <option value="bank_transfer">Bank Transfer</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Region / Country</label>
+            <input
+              type="text"
+              value={filters.region}
+              onChange={(e) => setFilters({ ...filters, region: e.target.value })}
+              placeholder="e.g. US, PK"
+              className="input-field text-sm py-1.5"
+            />
+          </div>
+          <div className="flex items-end space-x-2">
+            <button onClick={applyFilters} className="btn-primary text-sm py-1.5 px-4 flex-1">
+              Apply
+            </button>
+            {hasActiveFilters && (
+              <button onClick={resetFilters} className="btn-outline text-sm py-1.5 px-3" title="Reset">
+                <FiRefreshCw size={14} />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         <StatCard icon={<FiUsers size={20} />} label="Total Users" value={stats.totalUsers?.toLocaleString()} sub={`${stats.newUsersThisWeek} new this week`} color="blue" />

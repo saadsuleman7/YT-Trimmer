@@ -193,7 +193,7 @@ const downloadVideo = async (options) => {
 };
 
 const cleanupOldFiles = () => {
-  const maxAge = 60 * 60 * 1000;
+  const maxAge = 5 * 60 * 1000;
   const now = Date.now();
 
   fs.readdirSync(DOWNLOADS_DIR).forEach(file => {
@@ -207,6 +207,6 @@ const cleanupOldFiles = () => {
   });
 };
 
-setInterval(cleanupOldFiles, 30 * 60 * 1000);
+setInterval(cleanupOldFiles, 60 * 1000);
 
 module.exports = { fetchMetadata, downloadVideo, cleanupOldFiles };

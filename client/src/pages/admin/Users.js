@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { toast } from 'react-toastify';
 import { formatDate } from '../../utils/helpers';
-import { FiSearch, FiShield, FiSlash, FiArrowUp, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiSearch, FiShield, FiSlash, FiArrowUp, FiArrowDown, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -47,6 +47,17 @@ const Users = () => {
       fetchUsers();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to upgrade user');
+    }
+  };
+
+  const handleCancelPremium = async (userId) => {
+    if (!window.confirm('Cancel this user\'s premium subscription?')) return;
+    try {
+      const res = await api.put(`/admin/users/${userId}/cancel-premium`);
+      toast.success(res.data.message);
+      fetchUsers();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to cancel premium');
     }
   };
 
@@ -151,7 +162,15 @@ const Users = () => {
                         >
                           <FiSlash size={16} />
                         </button>
-                        {!user.isPremium && (
+                        {user.isPremium ? (
+                          <button
+                            onClick={() => handleCancelPremium(user._id)}
+                            className="p-1.5 rounded-lg text-orange-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors"
+                            title="Cancel Premium"
+                          >
+                            <FiArrowDown size={16} />
+                          </button>
+                        ) : (
                           <button
                             onClick={() => handleUpgrade(user._id)}
                             className="p-1.5 rounded-lg text-primary-600 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"

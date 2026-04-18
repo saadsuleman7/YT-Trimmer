@@ -17,9 +17,17 @@ router.use(protect, adminOnly);
 router.get('/dashboard', async (req, res) => {
   try {
     const now = new Date();
-    const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
+    const { from, to, method, region } = req.query;
+    const dateFrom = from ? new Date(from) : new Date(now - 30 * 24 * 60 * 60 * 1000);
+    const dateTo = to ? new Date(new Date(to).setHours(23, 59, 59, 999)) : now;
+    const thirtyDaysAgo = dateFrom;
     const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const downloadFilter = { createdAt: { $gte: dateFrom, $lte: dateTo } };
+    if (region) downloadFilter.country = region;
+    const paymentFilter = { status: { $in: ['completed', 'approved'] }, createdAt: { $gte: dateFrom, $lte: dateTo } };
+    if (method) paymentFilter.method = method;
 
     const [
       totalUsers,
@@ -52,7 +60,7 @@ router.get('/dashboard', async (req, res) => {
         { $group: { _id: null, total: { $sum: '$amount' } } },
       ]),
       Payment.aggregate([
-        { $match: { status: { $in: ['completed', 'approved'] }, createdAt: { $gte: thirtyDaysAgo } } },
+        { $match: paymentFilter },
         { $group: { _id: null, total: { $sum: '$amount' } } },
       ]),
       Rating.aggregate([
@@ -61,14 +69,16 @@ router.get('/dashboard', async (req, res) => {
       ]),
       User.countDocuments({ createdAt: { $gte: sevenDaysAgo } }),
       Download.aggregate([
+        { $match: downloadFilter },
         { $group: { _id: '$format', count: { $sum: 1 } } },
       ]),
       Download.aggregate([
+        { $match: downloadFilter },
         { $group: { _id: '$quality', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
       ]),
       Download.aggregate([
-        { $match: { createdAt: { $gte: thirtyDaysAgo } } },
+        { $match: downloadFilter },
         {
           $group: {
             _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
@@ -78,19 +88,19 @@ router.get('/dashboard', async (req, res) => {
         { $sort: { _id: 1 } },
       ]),
       Download.aggregate([
-        { $match: { country: { $ne: null } } },
+        { $match: { ...downloadFilter, country: { $ne: null } } },
         { $group: { _id: '$country', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 10 },
       ]),
       Payment.countDocuments({ status: 'pending' }),
       Payment.aggregate([
-        { $match: { status: { $in: ['completed', 'approved'] } } },
+        { $match: paymentFilter },
         { $group: { _id: '$method', count: { $sum: 1 }, total: { $sum: '$amount' } } },
         { $sort: { total: -1 } },
       ]),
       Payment.aggregate([
-        { $match: { status: { $in: ['completed', 'approved'] }, createdAt: { $gte: thirtyDaysAgo } } },
+        { $match: paymentFilter },
         {
           $group: {
             _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
@@ -101,12 +111,12 @@ router.get('/dashboard', async (req, res) => {
         { $sort: { _id: 1 } },
       ]),
       Payment.aggregate([
-        { $match: { status: { $in: ['completed', 'approved'] } } },
+        { $match: paymentFilter },
         { $group: { _id: '$plan', count: { $sum: 1 }, total: { $sum: '$amount' } } },
       ]),
       Payment.countDocuments({ status: { $in: ['completed', 'approved'] } }),
       User.aggregate([
-        { $match: { createdAt: { $gte: thirtyDaysAgo } } },
+        { $match: { createdAt: { $gte: dateFrom, $lte: dateTo } } },
         {
           $group: {
             _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
@@ -129,11 +139,12 @@ router.get('/dashboard', async (req, res) => {
       Download.countDocuments({ status: 'failed' }),
       Download.countDocuments({ status: 'completed' }),
       Download.aggregate([
-        { $match: { fps: { $ne: null } } },
+        { $match: { ...downloadFilter, fps: { $ne: null } } },
         { $group: { _id: '$fps', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
       ]),
       Download.aggregate([
+        { $match: downloadFilter },
         { $group: { _id: '$videoTitle', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 10 },
@@ -249,6 +260,25 @@ router.put('/users/:id/upgrade', async (req, res) => {
     res.json({ message: 'User upgraded to premium', user });
   } catch (error) {
     res.status(500).json({ error: 'Failed to upgrade user' });
+  }
+});
+
+// PUT /api/admin/users/:id/cancel-premium
+router.put('/users/:id/cancel-premium', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user.isPremium) return res.status(400).json({ error: 'User is not premium' });
+
+    user.isPremium = false;
+    user.premiumPlan = null;
+    user.premiumExpiry = null;
+    user.warningEmailSent = false;
+    await user.save();
+
+    res.json({ message: `Premium cancelled for ${user.username}`, user });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to cancel premium' });
   }
 });
 
@@ -446,6 +476,16 @@ router.put('/contacts/:id/read', async (req, res) => {
     res.json({ message: 'Marked as read' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to update contact' });
+  }
+});
+
+// DELETE /api/admin/contacts/:id
+router.delete('/contacts/:id', async (req, res) => {
+  try {
+    await Contact.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Message deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete contact' });
   }
 });
 
