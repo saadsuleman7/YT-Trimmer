@@ -3,13 +3,35 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import api from '../utils/api';
-import { FiCheck, FiX, FiCreditCard, FiDollarSign } from 'react-icons/fi';
+import { FiCheck, FiX, FiCreditCard, FiDollarSign, FiGift } from 'react-icons/fi';
 import ManualPayment from '../components/payment/ManualPayment';
 
 const Pricing = () => {
-  const { isAuthenticated, isPremium } = useAuth();
+  const { isAuthenticated, isPremium, updateUser } = useAuth();
   const [loading, setLoading] = useState(null);
   const [showManual, setShowManual] = useState(null);
+  const [promoCode, setPromoCode] = useState('');
+  const [redeemingPromo, setRedeemingPromo] = useState(false);
+
+  const handleRedeemPromo = async (e) => {
+    e.preventDefault();
+    if (!isAuthenticated) {
+      toast.info('Please log in first');
+      return;
+    }
+    if (!promoCode.trim()) return;
+    setRedeemingPromo(true);
+    try {
+      const res = await api.post('/payments/redeem-promo', { code: promoCode });
+      toast.success(res.data.message);
+      setPromoCode('');
+      updateUser({ isPremium: true, premiumExpiry: res.data.premiumExpiry });
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Invalid promo code');
+    } finally {
+      setRedeemingPromo(false);
+    }
+  };
 
   const handleStripeCheckout = async (plan) => {
     if (!isAuthenticated) {
@@ -166,7 +188,37 @@ const Pricing = () => {
         ))}
       </div>
 
-      <div className="text-center mt-12">
+      {/* Promo Code Section */}
+      <div className="max-w-md mx-auto mt-12">
+        <form onSubmit={handleRedeemPromo} className="card p-6">
+          <h3 className="font-semibold text-center mb-3 flex items-center justify-center space-x-2">
+            <FiGift className="text-primary-500" />
+            <span>Have a Promo Code?</span>
+          </h3>
+          <div className="flex space-x-2">
+            <input
+              type="text"
+              value={promoCode}
+              onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+              placeholder="Enter promo code"
+              className="input-field flex-1 font-mono"
+            />
+            <button
+              type="submit"
+              disabled={redeemingPromo || !promoCode.trim()}
+              className="btn-primary px-5 flex items-center space-x-2"
+            >
+              {redeemingPromo ? (
+                <div className="w-4 h-4 border-2 border-dark-900 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <span>Redeem</span>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div className="text-center mt-8">
         <p className="text-sm text-gray-500 dark:text-gray-400">
           We accept Stripe (Cards), PayPal, Crypto, Easypaisa, and Bank Transfer.
           <br />

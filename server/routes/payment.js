@@ -10,6 +10,7 @@ const validate = require('../middleware/validate');
 const Payment = require('../models/Payment');
 const PaymentConfig = require('../models/PaymentConfig');
 const User = require('../models/User');
+const PromoCode = require('../models/PromoCode');
 const { sendApprovalEmail } = require('../utils/emailService');
 
 // Configure multer for proof uploads
@@ -233,6 +234,57 @@ router.get('/my-payments', protect, async (req, res) => {
     res.json({ payments });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch payment history' });
+  }
+});
+
+// POST /api/payments/redeem-promo - Redeem a promo code
+router.post('/redeem-promo', protect, [
+  body('code').trim().notEmpty().withMessage('Promo code is required'),
+], validate, async (req, res) => {
+  try {
+    const code = req.body.code.toUpperCase().trim();
+    const promo = await PromoCode.findOne({ code });
+
+    if (!promo) {
+      return res.status(404).json({ error: 'Invalid promo code' });
+    }
+    if (!promo.isActive) {
+      return res.status(400).json({ error: 'This promo code is no longer active' });
+    }
+    if (promo.expiresAt < new Date()) {
+      return res.status(400).json({ error: 'This promo code has expired' });
+    }
+    if (promo.currentUses >= promo.maxUses) {
+      return res.status(400).json({ error: 'This promo code has reached its usage limit' });
+    }
+    if (promo.usedBy.includes(req.user._id)) {
+      return res.status(400).json({ error: 'You have already used this promo code' });
+    }
+
+    const expiry = new Date();
+    if (req.user.isPremium && req.user.premiumExpiry > new Date()) {
+      expiry.setTime(new Date(req.user.premiumExpiry).getTime());
+    }
+    expiry.setDate(expiry.getDate() + promo.premiumDays);
+
+    await User.findByIdAndUpdate(req.user._id, {
+      isPremium: true,
+      premiumPlan: promo.premiumDays <= 7 ? 'weekly' : 'monthly',
+      premiumExpiry: expiry,
+      warningEmailSent: false,
+    });
+
+    promo.currentUses += 1;
+    promo.usedBy.push(req.user._id);
+    await promo.save();
+
+    res.json({
+      message: `Promo code applied! You have ${promo.premiumDays} days of premium added.`,
+      premiumExpiry: expiry,
+      premiumDays: promo.premiumDays,
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to redeem promo code' });
   }
 });
 

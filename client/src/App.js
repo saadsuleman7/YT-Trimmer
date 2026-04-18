@@ -32,6 +32,7 @@ import AdminPayments from './pages/admin/Payments';
 import AdminReviews from './pages/admin/ReviewsMod';
 import AdminDownloads from './pages/admin/Downloads';
 import AdminSettings from './pages/admin/Settings';
+import AdminPromoCodes from './pages/admin/PromoCodes';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, requireAdmin = false }) => {
@@ -78,6 +79,7 @@ const AppRoutes = () => {
         <Route path="payments" element={<AdminPayments />} />
         <Route path="reviews" element={<AdminReviews />} />
         <Route path="downloads" element={<AdminDownloads />} />
+        <Route path="promo-codes" element={<AdminPromoCodes />} />
         <Route path="settings" element={<AdminSettings />} />
       </Route>
 

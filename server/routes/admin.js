@@ -7,6 +7,7 @@ const Payment = require('../models/Payment');
 const Rating = require('../models/Rating');
 const Contact = require('../models/Contact');
 const PaymentConfig = require('../models/PaymentConfig');
+const PromoCode = require('../models/PromoCode');
 const { sendApprovalEmail, sendRejectionEmail } = require('../utils/emailService');
 
 // All admin routes require auth + admin role
@@ -471,6 +472,75 @@ router.put('/payment-config/:method', async (req, res) => {
     res.json({ message: 'Payment config updated', config });
   } catch (error) {
     res.status(500).json({ error: 'Failed to update payment config' });
+  }
+});
+
+// ==================== PROMO CODES ====================
+
+// GET /api/admin/promo-codes
+router.get('/promo-codes', async (req, res) => {
+  try {
+    const codes = await PromoCode.find()
+      .populate('createdBy', 'username')
+      .sort({ createdAt: -1 })
+      .lean();
+    res.json({ codes });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch promo codes' });
+  }
+});
+
+// POST /api/admin/promo-codes
+router.post('/promo-codes', async (req, res) => {
+  try {
+    const { code, premiumDays, maxUses, expiresAt } = req.body;
+
+    if (!code || !premiumDays || !maxUses || !expiresAt) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    const existing = await PromoCode.findOne({ code: code.toUpperCase().trim() });
+    if (existing) {
+      return res.status(400).json({ error: 'Promo code already exists' });
+    }
+
+    const promo = await PromoCode.create({
+      code: code.toUpperCase().trim(),
+      premiumDays: parseInt(premiumDays, 10),
+      maxUses: parseInt(maxUses, 10),
+      expiresAt: new Date(expiresAt),
+      createdBy: req.user._id,
+    });
+
+    res.status(201).json({ message: 'Promo code created', promo });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create promo code' });
+  }
+});
+
+// PUT /api/admin/promo-codes/:id/toggle
+router.put('/promo-codes/:id/toggle', async (req, res) => {
+  try {
+    const promo = await PromoCode.findById(req.params.id);
+    if (!promo) return res.status(404).json({ error: 'Promo code not found' });
+
+    promo.isActive = !promo.isActive;
+    await promo.save();
+
+    res.json({ message: `Promo code ${promo.isActive ? 'activated' : 'deactivated'}`, promo });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update promo code' });
+  }
+});
+
+// DELETE /api/admin/promo-codes/:id
+router.delete('/promo-codes/:id', async (req, res) => {
+  try {
+    const promo = await PromoCode.findByIdAndDelete(req.params.id);
+    if (!promo) return res.status(404).json({ error: 'Promo code not found' });
+    res.json({ message: 'Promo code deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete promo code' });
   }
 });
 
