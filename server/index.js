@@ -13,6 +13,7 @@ const ratingRoutes = require('./routes/rating');
 const paymentRoutes = require('./routes/payment');
 const adminRoutes = require('./routes/admin');
 const contactRoutes = require('./routes/contact');
+const secretRoutes = require('./routes/secret');
 
 const app = express();
 
@@ -60,6 +61,7 @@ app.use('/api/ratings', ratingRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/secret', secretRoutes);
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
