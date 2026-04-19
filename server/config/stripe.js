@@ -31,20 +31,6 @@ const PLANS = {
     days: 90,
     priceId: process.env.STRIPE_3MONTHS_PRICE_ID,
   },
-  '6months': {
-    name: '6 Months Premium',
-    price: 1200, // $12.00 in cents
-    interval: '6 months',
-    days: 180,
-    priceId: process.env.STRIPE_6MONTHS_PRICE_ID,
-  },
-  yearly: {
-    name: 'Yearly Premium',
-    price: 2000, // $20.00 in cents
-    interval: 'year',
-    days: 365,
-    priceId: process.env.STRIPE_YEARLY_PRICE_ID,
-  },
 };
 
 module.exports = { stripe, PLANS };
