@@ -1,8 +1,14 @@
 import React from 'react';
+import SEO from '../components/SEO';
 
 const Privacy = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 animate-fade-in">
+      <SEO
+        title="Privacy Policy"
+        description="Read YT-Trimmer's privacy policy. Learn how we handle your data, protect your privacy, and ensure files are automatically deleted after processing."
+        canonical="/privacy"
+      />
       <h1 className="text-3xl sm:text-4xl font-bold mb-8">
         Privacy <span className="gradient-text">Policy</span>
       </h1>

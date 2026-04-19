@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { FiStar, FiUser } from 'react-icons/fi';
 import { formatDate } from '../utils/helpers';
+import SEO from '../components/SEO';
 
 const StarDisplay = ({ rating, size = 16 }) => (
   <div className="flex">
@@ -36,8 +37,28 @@ const Reviews = () => {
       .finally(() => setLoading(false));
   }, [page]);
 
+  const reviewSchema = totalRatings > 0 ? [{
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: 'YT-Trimmer',
+    description: 'Online video downloader and trimmer.',
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: avgRating.toString(),
+      reviewCount: totalRatings.toString(),
+      bestRating: '5',
+      worstRating: '1',
+    },
+  }] : [];
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 animate-fade-in">
+      <SEO
+        title="User Reviews &amp; Ratings"
+        description={`See what ${totalRatings > 0 ? totalRatings + ' users' : 'our users'} say about YT-Trimmer. ${avgRating > 0 ? 'Rated ' + avgRating + '/5 stars. ' : ''}Real reviews from the community.`}
+        canonical="/reviews"
+        schemas={reviewSchema}
+      />
       <div className="text-center mb-16">
         <h1 className="text-3xl sm:text-5xl font-bold mb-4">
           What Users <span className="gradient-text">Say</span>

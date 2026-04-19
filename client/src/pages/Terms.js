@@ -1,8 +1,14 @@
 import React from 'react';
+import SEO from '../components/SEO';
 
 const Terms = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 animate-fade-in">
+      <SEO
+        title="Terms of Service"
+        description="Read YT-Trimmer's terms of service. Understand the rules for using our video download and trimming platform."
+        canonical="/terms"
+      />
       <h1 className="text-3xl sm:text-4xl font-bold mb-8">
         Terms of <span className="gradient-text">Service</span>
       </h1>

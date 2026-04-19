@@ -3,6 +3,7 @@ const { body } = require('express-validator');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
+const geoip = require('geoip-lite');
 const { downloadVideo } = require('../utils/videoProcessor');
 const { optionalAuth, protect } = require('../middleware/auth');
 const validate = require('../middleware/validate');
@@ -43,6 +44,12 @@ router.post('/start', optionalAuth, [
       }
     }
 
+    // Resolve country from IP
+    const rawIp = req.ip || req.connection?.remoteAddress || '';
+    const cleanIp = rawIp.replace(/^::ffff:/, '');
+    const geo = geoip.lookup(cleanIp);
+    const country = geo?.country || null;
+
     // Create download record
     const download = await Download.create({
       user: req.user?._id || null,
@@ -55,7 +62,8 @@ router.post('/start', optionalAuth, [
       trimStart: trimStart || 0,
       trimEnd: trimEnd || null,
       status: 'processing',
-      ipAddress: req.ip,
+      ipAddress: cleanIp,
+      country,
     });
 
     // Process download

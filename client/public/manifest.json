@@ -1,0 +1,26 @@
+{
+  "short_name": "YT-Trimmer",
+  "name": "YT-Trimmer — Download & Trim Videos",
+  "description": "Download and trim videos from YouTube and other platforms. Free up to 720p, premium for 4K.",
+  "icons": [
+    {
+      "src": "/logo-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#0f172a",
+  "background_color": "#0f172a",
+  "categories": ["utilities", "video"],
+  "lang": "en-US",
+  "orientation": "any"
+}

@@ -5,6 +5,7 @@ import { FiSearch, FiDownload, FiLock, FiMusic, FiFilm, FiClock, FiInfo } from '
 import api from '../utils/api';
 import { formatTime, parseTime, isQualityLocked } from '../utils/helpers';
 import RatingPopup from '../components/ratings/RatingPopup';
+import SEO from '../components/SEO';
 
 const DownloadTool = () => {
   const { isAuthenticated, isPremium } = useAuth();
@@ -283,6 +284,21 @@ const DownloadTool = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 animate-fade-in">
+      <SEO
+        title="Video Download &amp; Trim Tool"
+        description="Paste a YouTube or video URL to download and trim. Choose MP4 or MP3, set start/end times, and download your clip instantly. Free up to 720p."
+        canonical="/tool"
+        schemas={[{
+          '@context': 'https://schema.org',
+          '@type': 'SoftwareApplication',
+          name: 'YT-Trimmer Video Tool',
+          applicationCategory: 'MultimediaApplication',
+          operatingSystem: 'Web',
+          url: 'https://yt-trimmer.com/tool',
+          description: 'Paste a video URL, set trim points, choose MP4 or MP3 format and quality, then download your trimmed clip instantly.',
+          offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+        }]}
+      />
       <div className="text-center mb-8">
         <h1 className="text-3xl sm:text-4xl font-bold mb-2">
           <span className="gradient-text">Download & Trim</span>

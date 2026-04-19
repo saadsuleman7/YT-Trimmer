@@ -2,12 +2,78 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+  <!-- Primary meta -->
   <meta name="theme-color" content="#0f172a" />
-  <meta name="description" content="YT-Trimmer - Download and trim videos with ease. Free and premium options available." />
-  <title>YT-Trimmer | Video Download & Trim Platform</title>
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+  <meta name="description" content="Download and trim videos from YouTube, TikTok, Twitter and more — free up to 720p, no signup required. Premium unlocks 4K, 60fps, and download history." />
+  <meta name="keywords" content="video downloader, youtube downloader, video trimmer, trim video online, download youtube video, MP4 downloader, MP3 extractor, 4K video download, free video cutter" />
+  <meta name="author" content="YT-Trimmer" />
+  <title>YT-Trimmer | Download &amp; Trim Videos Free — No Signup Required</title>
+
+  <!-- Canonical (overridden per-page by react-helmet-async) -->
+  <link rel="canonical" href="https://yt-trimmer.com/" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="/logo.png" type="image/png" />
+  <link rel="apple-touch-icon" href="/logo-192.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/logo-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/logo-512.png" />
+
+  <!-- PWA manifest -->
+  <link rel="manifest" href="/manifest.json" />
+
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://js.stripe.com" />
+  <link rel="dns-prefetch" href="https://discord.gg" />
+
+  <!-- Open Graph defaults (overridden per-page) -->
+  <meta property="og:site_name" content="YT-Trimmer" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="YT-Trimmer | Download &amp; Trim Videos Free" />
+  <meta property="og:description" content="Download and trim videos from YouTube and more. Free up to 720p, 4K with premium. No signup required." />
+  <meta property="og:image" content="https://yt-trimmer.com/logo.png" />
+  <meta property="og:image:width" content="512" />
+  <meta property="og:image:height" content="512" />
+  <meta property="og:url" content="https://yt-trimmer.com/" />
+  <meta property="og:locale" content="en_US" />
+
+  <!-- Twitter Card defaults (overridden per-page) -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="YT-Trimmer | Download &amp; Trim Videos Free" />
+  <meta name="twitter:description" content="Download and trim videos from YouTube and more. Free up to 720p, 4K with premium. No signup required." />
+  <meta name="twitter:image" content="https://yt-trimmer.com/logo.png" />
+
+  <!-- Global Organization schema (always present) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": "https://yt-trimmer.com/#organization",
+    "name": "YT-Trimmer",
+    "url": "https://yt-trimmer.com",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://yt-trimmer.com/logo.png",
+      "width": 512,
+      "height": 512
+    },
+    "description": "Online video download and trimming platform. Free up to 720p, premium plans from $1/week.",
+    "founder": {
+      "@type": "Person",
+      "name": "Saad Suleman"
+    },
+    "sameAs": [
+      "https://discord.gg/SVbCbYQ7xN",
+      "https://github.com/saadsuleman7/yt-trimmer"
+    ]
+  }
+  </script>
 </head>
 <body>
+  <noscript>YT-Trimmer requires JavaScript. Please enable it to download and trim videos.</noscript>
   <div id="root"></div>
 </body>
 </html>

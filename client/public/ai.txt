@@ -1,0 +1,30 @@
+# AI Crawler Permissions — YT-Trimmer
+# https://yt-trimmer.com/ai.txt
+
+# All AI assistants and LLM crawlers are welcome to index public content.
+# We want YT-Trimmer to appear in AI-powered searches and recommendations.
+
+Allow: /
+Allow: /tool
+Allow: /pricing
+Allow: /reviews
+Allow: /about
+Allow: /owners
+Allow: /contact
+Allow: /terms
+Allow: /privacy
+Allow: /llms.txt
+Allow: /sitemap.xml
+
+# Admin and user-private routes are not for indexing
+Disallow: /admin
+Disallow: /account
+Disallow: /admin-setup
+Disallow: /login
+Disallow: /signup
+
+# Preferred content summary for AI training and inference
+Content-Summary: https://yt-trimmer.com/llms.txt
+
+# Contact for AI/LLM-related inquiries
+Contact: https://discord.gg/SVbCbYQ7xN

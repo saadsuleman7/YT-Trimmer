@@ -4,6 +4,119 @@ import { FiDownload, FiScissors, FiZap, FiShield, FiStar, FiArrowRight } from 'r
 import { FaDiscord } from 'react-icons/fa';
 import api from '../utils/api';
 import AnimateIn from '../components/ui/AnimateIn';
+import SEO from '../components/SEO';
+
+const HOME_SCHEMAS = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': 'https://yt-trimmer.com/#website',
+    url: 'https://yt-trimmer.com',
+    name: 'YT-Trimmer',
+    description: 'Download and trim videos from YouTube and other platforms. Free up to 720p, premium for 4K.',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: { '@type': 'EntryPoint', urlTemplate: 'https://yt-trimmer.com/tool?url={search_term_string}' },
+      'query-input': 'required name=search_term_string',
+    },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'YT-Trimmer',
+    applicationCategory: 'MultimediaApplication',
+    operatingSystem: 'Web',
+    url: 'https://yt-trimmer.com/tool',
+    description: 'Online video downloader and trimmer. Paste a URL, set trim points, and download as MP4 or MP3.',
+    offers: {
+      '@type': 'AggregateOffer',
+      priceCurrency: 'USD',
+      lowPrice: '0',
+      highPrice: '13',
+      offerCount: '5',
+    },
+    featureList: [
+      'Video download up to 4K',
+      'MP3 audio extraction',
+      'Precise video trimming',
+      'Download history',
+      'No signup required for free use',
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: 'How to Download and Trim a Video with YT-Trimmer',
+    description: 'Step-by-step guide to downloading and trimming a video using YT-Trimmer.',
+    totalTime: 'PT2M',
+    step: [
+      {
+        '@type': 'HowToStep',
+        position: 1,
+        name: 'Paste the video URL',
+        text: 'Copy the video URL from YouTube or another supported platform and paste it into the YT-Trimmer tool at yt-trimmer.com/tool.',
+      },
+      {
+        '@type': 'HowToStep',
+        position: 2,
+        name: 'Set your trim points',
+        text: 'Use the timeline slider or type the start and end times manually to select the exact portion of the video you want.',
+      },
+      {
+        '@type': 'HowToStep',
+        position: 3,
+        name: 'Choose format and download',
+        text: 'Select MP4 (video) or MP3 (audio) and your preferred quality. Click Download and your trimmed file will be ready in seconds.',
+      },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'Is YT-Trimmer free to use?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes. YT-Trimmer is free for videos up to 720p with no account required. Premium plans start at $1/week and unlock 4K quality, high frame rates (60fps+), and download history.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Do I need to create an account to use YT-Trimmer?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'No signup is required for basic free use. Create a free account to unlock download history and premium features.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'What video formats can I download?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'You can download as MP4 (video) in various quality settings up to 4K, or as MP3 (audio only). Quality up to 720p is free; higher resolutions require a premium plan.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Are downloaded videos stored on YT-Trimmer servers?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'No. Files are automatically deleted from our servers after processing. We never store your videos permanently.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'What platforms does YT-Trimmer support?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'YouTube is the primary supported platform. Many other video platforms may work — paste the URL into the tool to check.',
+        },
+      },
+    ],
+  },
+];
 
 const Home = () => {
   const [stats, setStats] = useState({ avgRating: 0, totalRatings: 0 });
@@ -27,6 +140,12 @@ const Home = () => {
 
   return (
     <div>
+      <SEO
+        title="Download &amp; Trim Videos Free — No Signup Required"
+        description="Paste a video URL, set trim points, pick MP4 or MP3 — download in seconds. Free up to 720p, no account needed. Premium unlocks 4K and 60fps."
+        canonical="/"
+        schemas={HOME_SCHEMAS}
+      />
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary-100/50 via-transparent to-primary-50/30 dark:from-primary-900/20 dark:via-transparent dark:to-primary-900/10" />

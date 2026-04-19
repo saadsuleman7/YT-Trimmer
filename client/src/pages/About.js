@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FiTarget, FiHeart, FiShield, FiZap } from 'react-icons/fi';
+import SEO from '../components/SEO';
 
 const About = () => {
   const values = [
@@ -12,6 +13,26 @@ const About = () => {
 
   return (
     <div className="animate-fade-in">
+      <SEO
+        title="About YT-Trimmer — Our Mission &amp; Story"
+        description="YT-Trimmer is a modern video download and trimming platform built for simplicity. Learn about our mission, values, and the team behind the platform."
+        canonical="/about"
+        schemas={[{
+          '@context': 'https://schema.org',
+          '@type': 'AboutPage',
+          name: 'About YT-Trimmer',
+          url: 'https://yt-trimmer.com/about',
+          description: 'YT-Trimmer is a modern video download and trimming platform built for simplicity and speed. Founded by Saad Suleman.',
+          about: {
+            '@type': 'Organization',
+            '@id': 'https://yt-trimmer.com/#organization',
+            name: 'YT-Trimmer',
+            foundingDate: '2024',
+            founder: { '@type': 'Person', name: 'Saad Suleman' },
+            numberOfEmployees: { '@type': 'QuantitativeValue', value: '5' },
+          },
+        }]}
+      />
       {/* Hero */}
       <section className="section-padding bg-gradient-to-br from-primary-50 to-white dark:from-dark-900 dark:to-dark-950">
         <div className="max-w-4xl mx-auto text-center">

@@ -26,7 +26,7 @@ const PLANS = {
   },
   '5months': {
     name: '5 Months Premium',
-    price: 1400, // $14.00 in cents
+    price: 1300, // $13.00 in cents
     interval: '5 months',
     days: 150,
     priceId: process.env.STRIPE_5MONTHS_PRICE_ID,

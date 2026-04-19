@@ -6,6 +6,50 @@ import api from '../utils/api';
 import { FiCheck, FiX, FiCreditCard, FiDollarSign, FiGift, FiArrowRight } from 'react-icons/fi';
 import ManualPayment from '../components/payment/ManualPayment';
 import AnimateIn from '../components/ui/AnimateIn';
+import SEO from '../components/SEO';
+
+const PRICING_SCHEMAS = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: 'YT-Trimmer Premium',
+    description: 'Premium subscription for YT-Trimmer. Unlock 4K downloads, 60fps, download history, and priority processing.',
+    url: 'https://yt-trimmer.com/pricing',
+    brand: { '@type': 'Brand', name: 'YT-Trimmer' },
+    offers: [
+      { '@type': 'Offer', name: 'Weekly', price: '1.00', priceCurrency: 'USD', priceValidUntil: '2026-12-31', availability: 'https://schema.org/InStock', description: '7 days of YT-Trimmer Premium' },
+      { '@type': 'Offer', name: 'Monthly', price: '3.00', priceCurrency: 'USD', priceValidUntil: '2026-12-31', availability: 'https://schema.org/InStock', description: '30 days of YT-Trimmer Premium' },
+      { '@type': 'Offer', name: '3 Months', price: '8.00', priceCurrency: 'USD', priceValidUntil: '2026-12-31', availability: 'https://schema.org/InStock', description: '90 days of YT-Trimmer Premium' },
+      { '@type': 'Offer', name: '5 Months', price: '13.00', priceCurrency: 'USD', priceValidUntil: '2026-12-31', availability: 'https://schema.org/InStock', description: '150 days of YT-Trimmer Premium' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'How much does YT-Trimmer Premium cost?',
+        acceptedAnswer: { '@type': 'Answer', text: 'Premium plans start at $1/week. Monthly is $3, 3 months is $8, and 5 months is $13 — the longer you commit, the more you save.' },
+      },
+      {
+        '@type': 'Question',
+        name: 'Can I cancel my YT-Trimmer premium subscription?',
+        acceptedAnswer: { '@type': 'Answer', text: 'Yes, you can cancel anytime. Your premium access continues until the end of your current billing period.' },
+      },
+      {
+        '@type': 'Question',
+        name: 'What payment methods does YT-Trimmer accept?',
+        acceptedAnswer: { '@type': 'Answer', text: 'We accept Stripe (credit/debit cards), PayPal, Crypto, Easypaisa, and Bank Transfer. Manual payments require a screenshot proof reviewed within 24 hours.' },
+      },
+      {
+        '@type': 'Question',
+        name: 'What does YT-Trimmer Premium unlock?',
+        acceptedAnswer: { '@type': 'Answer', text: 'Premium unlocks video downloads up to 4K resolution, high frame rates (60fps+), download history, and priority processing.' },
+      },
+    ],
+  },
+];
 
 const Pricing = () => {
   const { isAuthenticated, isPremium, updateUser } = useAuth();
@@ -75,7 +119,7 @@ const Pricing = () => {
     { id: 'weekly', name: 'Weekly', price: '$1', period: '/week', monthly: '$4.33/mo', save: null },
     { id: 'monthly', name: 'Monthly', price: '$3', period: '/month', monthly: '$3/mo', save: '31%', popular: true },
     { id: '3months', name: '3 Months', price: '$8', period: '/3 mo', monthly: '$2.67/mo', save: '38%' },
-    { id: '5months', name: '5 Months', price: '$14', period: '/5 mo', monthly: '$2.80/mo', save: '35%', best: true },
+    { id: '5months', name: '5 Months', price: '$13', period: '/5 mo', monthly: '$2.60/mo', save: '40%', best: true },
   ];
 
   const renderPlanActions = (planId) => {
@@ -115,6 +159,12 @@ const Pricing = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
+      <SEO
+        title="Pricing Plans — Premium from $1/week"
+        description="Start free forever or go premium from $1/week. Unlock 4K video downloads, 60fps, and download history. Cancel anytime. Multiple payment methods accepted."
+        canonical="/pricing"
+        schemas={PRICING_SCHEMAS}
+      />
       <AnimateIn type="fade-up">
         <div className="text-center mb-16">
           <h1 className="text-3xl sm:text-5xl font-bold mb-4">
@@ -164,7 +214,7 @@ const Pricing = () => {
               <h3 className="text-lg font-semibold mb-2">Premium Plans</h3>
               <div className="flex items-end justify-center">
                 <span className="text-4xl font-extrabold">$1</span>
-                <span className="text-gray-500 dark:text-gray-400 ml-1 mb-1">- $14</span>
+                <span className="text-gray-500 dark:text-gray-400 ml-1 mb-1">- $13</span>
               </div>
               <p className="text-xs text-gray-500 mt-1">Choose your duration below</p>
             </div>

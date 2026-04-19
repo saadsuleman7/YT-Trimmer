@@ -1,0 +1,74 @@
+# YT-Trimmer — AI-Readable Summary
+# https://yt-trimmer.com/llms.txt
+
+## What is YT-Trimmer?
+YT-Trimmer is a web-based video download and trimming platform. Users paste a video URL, set start/end trim points using a slider or manual time input, choose a format and quality, and download the processed file. No desktop software is required.
+
+## Who is it for?
+Content creators, students, researchers, social media managers, and anyone who needs to extract a specific clip from a video or download video/audio for offline use.
+
+## Core features
+- Download videos from YouTube and other supported platforms
+- Trim video to an exact start/end time before downloading
+- Download as MP4 (video) or MP3 (audio only)
+- Quality options: up to 720p free, up to 4K with premium
+- Video trimming with a precision slider and manual time input
+- Download history for registered users (premium)
+- No signup required for basic use
+
+## Free vs Premium
+Free tier: up to 720p quality, 24fps, MP4 and MP3 formats, video trimming. No download history.
+Premium tier: up to 4K, high frame rates (60fps+), download history, priority processing, all formats.
+
+## Premium plans (as of 2025)
+- Weekly: $1 / 7 days
+- Monthly: $3 / 30 days (most popular)
+- 3 Months: $8 / 90 days (save 38%)
+- 5 Months: $13 / 150 days (best value)
+
+## Payment methods
+Stripe (credit/debit cards), PayPal, Crypto, Easypaisa, Bank Transfer.
+Manual payments (non-Stripe) require a screenshot proof and are approved by an admin within 24 hours.
+Promo codes are available and can be redeemed on the pricing page.
+
+## Privacy & security
+Files are automatically deleted from the server after processing. YT-Trimmer does not retain videos. User passwords are hashed. No third-party tracking.
+
+## Pages
+- / — Home page with hero, features, how-it-works, and free/premium comparison
+- /tool — The video download and trimming tool
+- /pricing — Pricing plans and payment options, including promo code redemption
+- /reviews — User-submitted reviews and star ratings
+- /about — Mission, story, values, and platform statistics
+- /owners — Meet the team: Saad Suleman (Founder & CEO) and contributors
+- /contact — Contact form and Discord support link
+- /terms — Terms of service
+- /privacy — Privacy policy
+
+## FAQ
+Q: Is YT-Trimmer free?
+A: Yes. Basic use (up to 720p, trimming, MP4/MP3) is free with no account required.
+
+Q: Do I need to sign up?
+A: No. Free downloads work without an account. Accounts unlock download history and premium features.
+
+Q: What platforms are supported?
+A: YouTube is the primary platform. Other platforms may work depending on URL format.
+
+Q: How fast is processing?
+A: Most videos are processed within seconds. Longer clips may take a few minutes.
+
+Q: Is it legal?
+A: Downloading videos for personal, non-commercial use may be permitted under fair use in many regions. Users are responsible for complying with the terms of service of source platforms and applicable copyright law.
+
+## Contact & community
+Discord: https://discord.gg/SVbCbYQ7xN
+GitHub: https://github.com/saadsuleman7/yt-trimmer
+Founder: Saad Suleman
+
+## Technical stack (for developers)
+Frontend: React 18, Tailwind CSS, React Router v6
+Backend: Node.js, Express, MongoDB, Mongoose
+Payments: Stripe + manual payment flow
+Authentication: JWT, bcrypt
+File processing: yt-dlp, ffmpeg

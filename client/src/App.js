@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -92,6 +93,7 @@ const AppRoutes = () => {
 
 const App = () => {
   return (
+    <HelmetProvider>
     <ThemeProvider>
       <AuthProvider>
         <Router>
@@ -111,6 +113,7 @@ const App = () => {
         </Router>
       </AuthProvider>
     </ThemeProvider>
+    </HelmetProvider>
   );
 };
 

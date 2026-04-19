@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import api from '../utils/api';
 import { FiMail, FiUser, FiMessageSquare, FiSend } from 'react-icons/fi';
 import { FaDiscord } from 'react-icons/fa';
+import SEO from '../components/SEO';
 
 const Contact = () => {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
@@ -26,6 +27,20 @@ const Contact = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 animate-fade-in">
+      <SEO
+        title="Contact Support — Get Help"
+        description="Have a question or feedback? Join our Discord for instant support or send us a message. We usually respond within 24 hours."
+        canonical="/contact"
+        schemas={[{
+          '@context': 'https://schema.org',
+          '@type': 'ContactPage',
+          name: 'Contact YT-Trimmer',
+          url: 'https://yt-trimmer.com/contact',
+          description: 'Get in touch with YT-Trimmer support via our contact form or Discord community.',
+          contactOption: 'TollFree',
+          availableLanguage: 'English',
+        }]}
+      />
       <div className="text-center mb-16">
         <h1 className="text-3xl sm:text-5xl font-bold mb-4">
           Get in <span className="gradient-text">Touch</span>

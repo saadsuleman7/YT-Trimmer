@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaDiscord } from 'react-icons/fa';
 import { FiLinkedin } from 'react-icons/fi';
+import SEO from '../components/SEO';
 
 const Owners = () => {
   const team = [
@@ -29,6 +30,21 @@ const Owners = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 animate-fade-in">
+      <SEO
+        title="Meet the Team — Founder &amp; Contributors"
+        description="Meet Saad Suleman, Founder & CEO of YT-Trimmer, and the developer team and community that make the platform possible."
+        canonical="/owners"
+        schemas={[{
+          '@context': 'https://schema.org',
+          '@type': 'Person',
+          name: 'Saad Suleman',
+          jobTitle: 'Founder & CEO',
+          worksFor: { '@type': 'Organization', '@id': 'https://yt-trimmer.com/#organization', name: 'YT-Trimmer' },
+          description: 'Founder of YT-Trimmer. Building simple tools that let creators grab and trim videos without friction.',
+          sameAs: ['https://discord.gg/SVbCbYQ7xN'],
+          url: 'https://yt-trimmer.com/owners',
+        }]}
+      />
       <div className="text-center mb-16">
         <h1 className="text-3xl sm:text-5xl font-bold mb-4">
           Meet Our <span className="gradient-text">Team</span>
