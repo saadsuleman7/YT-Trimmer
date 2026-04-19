@@ -16,7 +16,9 @@ const Contact = () => {
       toast.success('Message sent successfully!');
       setForm({ name: '', email: '', subject: '', message: '' });
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to send message');
+      const data = err.response?.data;
+      const detailMsg = data?.details?.[0]?.message;
+      toast.error(detailMsg || data?.error || 'Failed to send message');
     } finally {
       setLoading(false);
     }
@@ -125,6 +127,7 @@ const Contact = () => {
                 placeholder="Tell us more..."
                 className="input-field resize-none"
               />
+              <p className="text-xs text-gray-400 mt-1">Minimum 10 characters.</p>
             </div>
 
             <button type="submit" disabled={loading} className="btn-primary flex items-center space-x-2">

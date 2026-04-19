@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { toast } from 'react-toastify';
 import { formatDateTime } from '../../utils/helpers';
-import { FiInbox, FiMail, FiMailOpen, FiTrash2, FiUser, FiClock } from 'react-icons/fi';
+import { FiInbox, FiMail, FiCheck, FiTrash2, FiUser, FiClock } from 'react-icons/fi';
 
 const Contacts = () => {
   const [messages, setMessages] = useState([]);
@@ -105,7 +105,7 @@ const Contacts = () => {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center space-x-2">
                         {msg.isRead ? (
-                          <FiMailOpen size={14} className="text-gray-400 flex-shrink-0" />
+                          <FiCheck size={14} className="text-gray-400 flex-shrink-0" />
                         ) : (
                           <FiMail size={14} className="text-primary-500 flex-shrink-0" />
                         )}

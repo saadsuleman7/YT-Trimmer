@@ -159,9 +159,14 @@ const Home = () => {
                 <li className="flex items-center space-x-2"><span className="text-green-500">&#10003;</span><span>Video trimming</span></li>
                 <li className="flex items-center space-x-2"><span className="text-green-500">&#10003;</span><span>Download history</span></li>
               </ul>
-              <Link to="/pricing" className="btn-primary w-full text-center mt-6 block">
-                From $2/week
-              </Link>
+              <div className="space-y-2 mt-6">
+                <Link to="/pricing" className="btn-primary w-full text-center block">
+                  Click to view plans
+                </Link>
+                <Link to="/pricing#promo" className="btn-outline w-full text-center block">
+                  Click to use promo code
+                </Link>
+              </div>
             </div>
           </div>
         </div>

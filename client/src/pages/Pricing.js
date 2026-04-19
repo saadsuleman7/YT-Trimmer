@@ -189,7 +189,7 @@ const Pricing = () => {
       </div>
 
       {/* Promo Code Section */}
-      <div className="max-w-md mx-auto mt-12">
+      <div id="promo" className="max-w-md mx-auto mt-12">
         <form onSubmit={handleRedeemPromo} className="card p-6">
           <h3 className="font-semibold text-center mb-3 flex items-center justify-center space-x-2">
             <FiGift className="text-primary-500" />

@@ -178,13 +178,38 @@ const Dashboard = () => {
           </div>
           <div>
             <label className="block text-xs text-gray-500 mb-1">Region / Country</label>
-            <input
-              type="text"
+            <select
               value={filters.region}
               onChange={(e) => setFilters({ ...filters, region: e.target.value })}
-              placeholder="e.g. US, PK"
               className="input-field text-sm py-1.5"
-            />
+            >
+              <option value="">All Regions</option>
+              <option value="US">United States</option>
+              <option value="PK">Pakistan</option>
+              <option value="IN">India</option>
+              <option value="GB">United Kingdom</option>
+              <option value="CA">Canada</option>
+              <option value="AU">Australia</option>
+              <option value="DE">Germany</option>
+              <option value="FR">France</option>
+              <option value="BR">Brazil</option>
+              <option value="JP">Japan</option>
+              <option value="RU">Russia</option>
+              <option value="ES">Spain</option>
+              <option value="IT">Italy</option>
+              <option value="MX">Mexico</option>
+              <option value="KR">South Korea</option>
+              <option value="NL">Netherlands</option>
+              <option value="SA">Saudi Arabia</option>
+              <option value="AE">UAE</option>
+              <option value="TR">Turkey</option>
+              <option value="EG">Egypt</option>
+              <option value="ID">Indonesia</option>
+              <option value="PH">Philippines</option>
+              <option value="VN">Vietnam</option>
+              <option value="NG">Nigeria</option>
+              <option value="ZA">South Africa</option>
+            </select>
           </div>
           <div className="flex items-end space-x-2">
             <button onClick={applyFilters} className="btn-primary text-sm py-1.5 px-4 flex-1">

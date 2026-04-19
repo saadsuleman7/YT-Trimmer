@@ -5,6 +5,13 @@ import { FiLinkedin } from 'react-icons/fi';
 const Owners = () => {
   const team = [
     {
+      name: 'Saad Suleman',
+      role: 'Founder & CEO',
+      bio: 'Founder of YT-Trimmer. Building simple tools that let creators grab and trim videos without friction.',
+      avatar: 'SS',
+      links: { discord: 'https://discord.gg/SVbCbYQ7xN' },
+    },
+    {
       name: 'Dev Team',
       role: 'Core Contributors',
       bio: 'Our talented team of developers, designers, and QA engineers work together to deliver the best video processing experience.',
@@ -31,7 +38,7 @@ const Owners = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
         {team.map((member, i) => (
           <div key={i} className="card-hover p-8 text-center">
             <div className="w-24 h-24 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 shadow-glow">
