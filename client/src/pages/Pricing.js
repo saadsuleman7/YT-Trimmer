@@ -74,8 +74,8 @@ const Pricing = () => {
   const paidPlans = [
     { id: 'weekly', name: 'Weekly', price: '$1', period: '/week', monthly: '$4.33/mo', save: null },
     { id: 'monthly', name: 'Monthly', price: '$3', period: '/month', monthly: '$3/mo', save: '31%', popular: true },
-    { id: '2months', name: '2 Months', price: '$5', period: '/2 mo', monthly: '$2.50/mo', save: '42%' },
-    { id: '3months', name: '3 Months', price: '$7', period: '/3 mo', monthly: '$2.33/mo', save: '46%', best: true },
+    { id: '2months', name: '2 Months', price: '$6', period: '/2 mo', monthly: '$3/mo', save: '31%' },
+    { id: '3months', name: '3 Months', price: '$8', period: '/3 mo', monthly: '$2.67/mo', save: '38%', best: true },
   ];
 
   const renderPlanActions = (planId) => {
@@ -164,7 +164,7 @@ const Pricing = () => {
               <h3 className="text-lg font-semibold mb-2">Premium Plans</h3>
               <div className="flex items-end justify-center">
                 <span className="text-4xl font-extrabold">$1</span>
-                <span className="text-gray-500 dark:text-gray-400 ml-1 mb-1">- $7</span>
+                <span className="text-gray-500 dark:text-gray-400 ml-1 mb-1">- $8</span>
               </div>
               <p className="text-xs text-gray-500 mt-1">Choose your duration below</p>
             </div>
