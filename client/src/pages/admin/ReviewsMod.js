@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { toast } from 'react-toastify';
 import { formatDateTime } from '../../utils/helpers';
-import { FiStar, FiEye, FiEyeOff, FiCheck, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiStar, FiEye, FiEyeOff, FiCheck, FiTrash2, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 const ReviewsMod = () => {
   const [reviews, setReviews] = useState([]);
@@ -40,6 +40,17 @@ const ReviewsMod = () => {
       fetchReviews();
     } catch (err) {
       toast.error('Failed to update review');
+    }
+  };
+
+  const handleDelete = async (reviewId) => {
+    if (!window.confirm('Delete this review permanently?')) return;
+    try {
+      await api.delete(`/admin/reviews/${reviewId}`);
+      toast.success('Review deleted');
+      fetchReviews();
+    } catch (err) {
+      toast.error('Failed to delete review');
     }
   };
 
@@ -128,6 +139,13 @@ const ReviewsMod = () => {
                           title={review.isVisible ? 'Hide' : 'Show'}
                         >
                           {review.isVisible ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                        </button>
+                        <button
+                          onClick={() => handleDelete(review._id)}
+                          className="p-1.5 rounded-lg text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                          title="Delete"
+                        >
+                          <FiTrash2 size={16} />
                         </button>
                       </div>
                     </td>

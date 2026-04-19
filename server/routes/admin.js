@@ -287,16 +287,28 @@ router.put('/users/:id/cancel-premium', async (req, res) => {
 router.put('/users/:id/role', async (req, res) => {
   try {
     const { role } = req.body;
-    if (!['user', 'admin'].includes(role)) {
+    if (!['user', 'admin', 'owner'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role' });
     }
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      { role },
-      { new: true }
-    );
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json({ message: 'Role updated', user });
+
+    const targetUser = await User.findById(req.params.id);
+    if (!targetUser) return res.status(404).json({ error: 'User not found' });
+
+    // Only owners can assign/remove owner or admin roles
+    if (targetUser.role === 'owner' && req.user.role !== 'owner') {
+      return res.status(403).json({ error: 'Only an owner can change another owner\'s role' });
+    }
+    if (role === 'owner' && req.user.role !== 'owner') {
+      return res.status(403).json({ error: 'Only an owner can make someone an owner' });
+    }
+    // Admins cannot demote other admins
+    if (targetUser.role === 'admin' && req.user.role === 'admin') {
+      return res.status(403).json({ error: 'Admins cannot change another admin\'s role' });
+    }
+
+    targetUser.role = role;
+    await targetUser.save();
+    res.json({ message: 'Role updated', user: targetUser });
   } catch (error) {
     res.status(500).json({ error: 'Failed to update role' });
   }
@@ -431,6 +443,17 @@ router.put('/reviews/:id', async (req, res) => {
     res.json({ message: 'Review updated', review });
   } catch (error) {
     res.status(500).json({ error: 'Failed to update review' });
+  }
+});
+
+// DELETE /api/admin/reviews/:id
+router.delete('/reviews/:id', async (req, res) => {
+  try {
+    const review = await Rating.findByIdAndDelete(req.params.id);
+    if (!review) return res.status(404).json({ error: 'Review not found' });
+    res.json({ message: 'Review deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete review' });
   }
 });
 

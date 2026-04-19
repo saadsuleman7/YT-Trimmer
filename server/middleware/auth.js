@@ -62,12 +62,20 @@ const optionalAuth = async (req, res, next) => {
   }
 };
 
-// Admin only
+// Admin or Owner only
 const adminOnly = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'owner')) {
     return next();
   }
   return res.status(403).json({ error: 'Admin access required' });
+};
+
+// Owner only
+const ownerOnly = (req, res, next) => {
+  if (req.user && req.user.role === 'owner') {
+    return next();
+  }
+  return res.status(403).json({ error: 'Owner access required' });
 };
 
 // Premium only
@@ -78,4 +86,4 @@ const premiumOnly = (req, res, next) => {
   return res.status(403).json({ error: 'Premium subscription required' });
 };
 
-module.exports = { protect, optionalAuth, adminOnly, premiumOnly };
+module.exports = { protect, optionalAuth, adminOnly, ownerOnly, premiumOnly };

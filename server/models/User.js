@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin'],
+    enum: ['user', 'admin', 'owner'],
     default: 'user',
   },
   isPremium: {
@@ -40,7 +40,6 @@ const userSchema = new mongoose.Schema({
   },
   premiumPlan: {
     type: String,
-    enum: ['weekly', 'monthly', null],
     default: null,
   },
   stripeCustomerId: {

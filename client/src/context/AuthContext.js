@@ -70,7 +70,8 @@ export const AuthProvider = ({ children }) => {
     updateUser,
     isAuthenticated: !!user,
     isPremium: user?.isPremium || false,
-    isAdmin: user?.role === 'admin',
+    isAdmin: user?.role === 'admin' || user?.role === 'owner',
+    isOwner: user?.role === 'owner',
   };
 
   return (

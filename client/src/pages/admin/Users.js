@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 import { toast } from 'react-toastify';
 import { formatDate } from '../../utils/helpers';
-import { FiSearch, FiShield, FiSlash, FiArrowUp, FiArrowDown, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiSearch, FiShield, FiSlash, FiArrowUp, FiArrowDown, FiChevronLeft, FiChevronRight, FiStar, FiUserX } from 'react-icons/fi';
 
 const Users = () => {
+  const { isOwner, user: currentUser } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -62,6 +64,8 @@ const Users = () => {
   };
 
   const handleRoleChange = async (userId, role) => {
+    const labels = { admin: 'admin', owner: 'owner', user: 'regular user' };
+    if (!window.confirm(`Change this user's role to ${labels[role]}?`)) return;
     try {
       const res = await api.put(`/admin/users/${userId}/role`, { role });
       toast.success(res.data.message);
@@ -69,6 +73,26 @@ const Users = () => {
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to update role');
     }
+  };
+
+  const getRoleBadge = (role) => {
+    const styles = {
+      owner: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+      admin: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+      user: 'bg-gray-100 text-gray-700 dark:bg-dark-600 dark:text-gray-300',
+    };
+    return (
+      <span className={`text-xs px-2 py-1 rounded-full font-medium ${styles[role] || styles.user}`}>
+        {role}
+      </span>
+    );
+  };
+
+  const canManageUser = (targetUser) => {
+    if (targetUser._id === currentUser?._id) return false;
+    if (isOwner) return true;
+    if (targetUser.role === 'owner' || targetUser.role === 'admin') return false;
+    return true;
   };
 
   return (
@@ -117,15 +141,7 @@ const Users = () => {
                         <p className="text-xs text-gray-500">{user.email}</p>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                        user.role === 'admin'
-                          ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                          : 'bg-gray-100 text-gray-700 dark:bg-dark-600 dark:text-gray-300'
-                      }`}>
-                        {user.role}
-                      </span>
-                    </td>
+                    <td className="px-4 py-3">{getRoleBadge(user.role)}</td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-1">
                         {user.isPremium && (
@@ -151,35 +167,41 @@ const Users = () => {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center space-x-1">
-                        <button
-                          onClick={() => handleBan(user._id)}
-                          className={`p-1.5 rounded-lg transition-colors ${
-                            user.isBanned
-                              ? 'text-green-600 hover:bg-green-100 dark:hover:bg-green-900/30'
-                              : 'text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30'
-                          }`}
-                          title={user.isBanned ? 'Unban' : 'Ban'}
-                        >
-                          <FiSlash size={16} />
-                        </button>
-                        {user.isPremium ? (
-                          <button
-                            onClick={() => handleCancelPremium(user._id)}
-                            className="p-1.5 rounded-lg text-orange-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors"
-                            title="Cancel Premium"
-                          >
-                            <FiArrowDown size={16} />
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleUpgrade(user._id)}
-                            className="p-1.5 rounded-lg text-primary-600 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
-                            title="Upgrade to Premium"
-                          >
-                            <FiArrowUp size={16} />
-                          </button>
+                        {canManageUser(user) && (
+                          <>
+                            <button
+                              onClick={() => handleBan(user._id)}
+                              className={`p-1.5 rounded-lg transition-colors ${
+                                user.isBanned
+                                  ? 'text-green-600 hover:bg-green-100 dark:hover:bg-green-900/30'
+                                  : 'text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30'
+                              }`}
+                              title={user.isBanned ? 'Unban' : 'Ban'}
+                            >
+                              <FiSlash size={16} />
+                            </button>
+                            {user.isPremium ? (
+                              <button
+                                onClick={() => handleCancelPremium(user._id)}
+                                className="p-1.5 rounded-lg text-orange-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors"
+                                title="Cancel Premium"
+                              >
+                                <FiArrowDown size={16} />
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleUpgrade(user._id)}
+                                className="p-1.5 rounded-lg text-primary-600 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+                                title="Upgrade to Premium"
+                              >
+                                <FiArrowUp size={16} />
+                              </button>
+                            )}
+                          </>
                         )}
-                        {user.role !== 'admin' && (
+
+                        {/* Role management */}
+                        {user.role === 'user' && (
                           <button
                             onClick={() => handleRoleChange(user._id, 'admin')}
                             className="p-1.5 rounded-lg text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
@@ -187,6 +209,24 @@ const Users = () => {
                           >
                             <FiShield size={16} />
                           </button>
+                        )}
+                        {user.role === 'admin' && isOwner && (
+                          <>
+                            <button
+                              onClick={() => handleRoleChange(user._id, 'user')}
+                              className="p-1.5 rounded-lg text-gray-600 hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors"
+                              title="Remove Admin"
+                            >
+                              <FiUserX size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleRoleChange(user._id, 'owner')}
+                              className="p-1.5 rounded-lg text-yellow-600 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors"
+                              title="Make Owner"
+                            >
+                              <FiStar size={16} />
+                            </button>
+                          </>
                         )}
                       </div>
                     </td>
@@ -197,7 +237,6 @@ const Users = () => {
           </div>
         )}
 
-        {/* Pagination */}
         {pagination.pages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-dark-700">
             <p className="text-sm text-gray-500">

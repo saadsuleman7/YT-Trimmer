@@ -14,10 +14,10 @@ const ManualPayment = ({ plan, onClose }) => {
   const [paymentMethods, setPaymentMethods] = useState([]);
 
   const priceMap = {
-    weekly: 1, monthly: 3, '2months': 6, '3months': 8,
+    weekly: 1, monthly: 3, '3months': 8, '5months': 14,
   };
   const labelMap = {
-    weekly: 'Weekly', monthly: 'Monthly', '2months': '2 Months', '3months': '3 Months',
+    weekly: 'Weekly', monthly: 'Monthly', '3months': '3 Months', '5months': '5 Months',
   };
   const priceNum = priceMap[plan] || 0;
   const price = `$${priceNum.toFixed(2)}`;
