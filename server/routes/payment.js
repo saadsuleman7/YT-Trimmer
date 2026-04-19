@@ -41,13 +41,12 @@ const upload = multer({
 
 // POST /api/payments/create-checkout - Stripe checkout
 router.post('/create-checkout', protect, [
-  body('plan').isIn(['weekly', 'monthly']).withMessage('Invalid plan'),
+  body('plan').isIn(Object.keys(PLANS)).withMessage('Invalid plan'),
 ], validate, async (req, res) => {
   try {
     const { plan } = req.body;
     const planConfig = PLANS[plan];
 
-    // Create or get Stripe customer
     let customerId = req.user.stripeCustomerId;
     if (!customerId) {
       const customer = await stripe.customers.create({
@@ -66,11 +65,10 @@ router.post('/create-checkout', protect, [
           currency: 'usd',
           product_data: { name: planConfig.name },
           unit_amount: planConfig.price,
-          recurring: { interval: planConfig.interval },
         },
         quantity: 1,
       }],
-      mode: 'subscription',
+      mode: 'payment',
       success_url: `${process.env.CLIENT_URL}/account?payment=success`,
       cancel_url: `${process.env.CLIENT_URL}/pricing?payment=cancelled`,
       metadata: {
@@ -104,8 +102,7 @@ router.post('/webhook', async (req, res) => {
       const plan = session.metadata.plan;
 
       const expiry = new Date();
-      if (plan === 'weekly') expiry.setDate(expiry.getDate() + 7);
-      else expiry.setMonth(expiry.getMonth() + 1);
+      expiry.setDate(expiry.getDate() + (PLANS[plan]?.days || 30));
 
       await User.findByIdAndUpdate(userId, {
         isPremium: true,
@@ -139,55 +136,34 @@ router.post('/webhook', async (req, res) => {
   res.json({ received: true });
 });
 
-// POST /api/payments/manual - Manual payment submission (auto-approved on exact amount)
+// POST /api/payments/manual - Manual payment submission (requires admin approval)
 router.post('/manual', protect, upload.single('proof'), [
-  body('plan').isIn(['weekly', 'monthly']).withMessage('Invalid plan'),
+  body('plan').isIn(Object.keys(PLANS)).withMessage('Invalid plan'),
   body('method').isIn(['crypto', 'easypaisa', 'paypal', 'bank_transfer']).withMessage('Invalid payment method'),
   body('transactionId').trim().notEmpty().withMessage('Transaction ID is required'),
-  body('amountPaid').notEmpty().withMessage('Amount paid is required'),
   body('senderDetails').optional().trim(),
 ], validate, async (req, res) => {
   try {
-    const { plan, method, transactionId, senderDetails, amountPaid } = req.body;
+    const { plan, method, transactionId, senderDetails } = req.body;
     const expectedAmount = PLANS[plan].price / 100;
-    const claimedAmount = parseFloat(amountPaid);
 
-    if (isNaN(claimedAmount) || Math.abs(claimedAmount - expectedAmount) > 0.001) {
-      return res.status(400).json({
-        error: `You must pay exactly $${expectedAmount.toFixed(2)} for the ${plan} plan. No more, no less.`,
-      });
+    if (!req.file) {
+      return res.status(400).json({ error: 'Proof of payment (screenshot) is required' });
     }
-
-    const expiry = new Date();
-    if (plan === 'weekly') expiry.setDate(expiry.getDate() + 7);
-    else expiry.setMonth(expiry.getMonth() + 1);
 
     const payment = await Payment.create({
       user: req.user._id,
       amount: expectedAmount,
       plan,
       method,
-      status: 'approved',
+      status: 'pending',
       transactionId,
       senderDetails: senderDetails || null,
-      proofImage: req.file ? `/uploads/proofs/${req.file.filename}` : null,
-      reviewedAt: new Date(),
-      adminNotes: 'Auto-approved: exact amount matched',
+      proofImage: `/uploads/proofs/${req.file.filename}`,
     });
-
-    await User.findByIdAndUpdate(req.user._id, {
-      isPremium: true,
-      premiumPlan: plan,
-      premiumExpiry: expiry,
-      warningEmailSent: false,
-    });
-
-    const user = await User.findById(req.user._id);
-    await sendApprovalEmail(user, payment);
 
     res.status(201).json({
-      message: 'Payment verified! Your premium is now active.',
-      autoApproved: true,
+      message: 'Payment submitted! Admin will review your proof and approve shortly.',
       payment: {
         id: payment._id,
         status: payment.status,

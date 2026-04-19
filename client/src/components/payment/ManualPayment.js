@@ -13,7 +13,14 @@ const ManualPayment = ({ plan, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [paymentMethods, setPaymentMethods] = useState([]);
 
-  const price = plan === 'weekly' ? '$2.00' : '$6.00';
+  const priceMap = {
+    weekly: 1, monthly: 3, '2months': 5, '3months': 7, '6months': 12, yearly: 20,
+  };
+  const labelMap = {
+    weekly: 'Weekly', monthly: 'Monthly', '2months': '2 Months', '3months': '3 Months', '6months': '6 Months', yearly: 'Yearly',
+  };
+  const priceNum = priceMap[plan] || 0;
+  const price = `$${priceNum.toFixed(2)}`;
 
   useEffect(() => {
     api.get('/payments/methods').then(res => {
@@ -27,8 +34,6 @@ const ManualPayment = ({ plan, onClose }) => {
     { id: 'paypal', label: 'PayPal', icon: '💳' },
     { id: 'bank_transfer', label: 'Bank Transfer', icon: '🏦' },
   ];
-
-  const priceNum = plan === 'weekly' ? 2 : 6;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,23 +50,24 @@ const ManualPayment = ({ plan, onClose }) => {
 
     setLoading(true);
     try {
+      if (!proof) {
+        toast.error('Please upload proof of payment (screenshot)');
+        setLoading(false);
+        return;
+      }
+
       const formData = new FormData();
       formData.append('plan', plan);
       formData.append('method', method);
       formData.append('transactionId', transactionId);
       formData.append('senderDetails', senderDetails);
-      formData.append('amountPaid', priceNum.toString());
-      if (proof) formData.append('proof', proof);
+      formData.append('proof', proof);
 
       const res = await api.post('/payments/manual', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      if (res.data.autoApproved) {
-        toast.success('Payment verified! Your premium is now active. Please log out and log back in.');
-      } else {
-        toast.success('Payment submitted! You will be notified once approved.');
-      }
+      toast.success('Payment submitted! Admin will review your proof and approve shortly.');
       onClose();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to submit payment');
@@ -88,12 +94,12 @@ const ManualPayment = ({ plan, onClose }) => {
           </div>
           <h3 className="text-xl font-bold">Manual Payment</h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            {plan === 'weekly' ? 'Weekly' : 'Monthly'} Premium
+            {labelMap[plan] || plan} Premium
           </p>
           <div className="mt-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-xl p-3">
-            <p className="text-amber-800 dark:text-amber-300 font-bold text-lg">{price}</p>
+            <p className="text-amber-800 dark:text-amber-300 font-bold text-lg">Send exactly {price}</p>
             <p className="text-amber-700 dark:text-amber-400 text-xs mt-1">
-              Only the exact amount is accepted. Sending more or less will not activate your premium.
+              Upload a screenshot of your payment. Admin will verify and approve your premium.
             </p>
           </div>
         </div>
@@ -180,7 +186,7 @@ const ManualPayment = ({ plan, onClose }) => {
             {/* Proof upload */}
             <div>
               <label className="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300">
-                Proof of Payment (screenshot)
+                Proof of Payment (screenshot) *
               </label>
               <label className="flex items-center justify-center space-x-2 p-4 border-2 border-dashed border-gray-300 dark:border-dark-600 rounded-xl cursor-pointer hover:border-primary-400 transition-colors">
                 <FiUpload className="text-gray-400" />
@@ -198,7 +204,7 @@ const ManualPayment = ({ plan, onClose }) => {
 
             <button
               type="submit"
-              disabled={loading || !method || !transactionId}
+              disabled={loading || !method || !transactionId || !proof}
               className="btn-primary w-full flex items-center justify-center space-x-2"
             >
               {loading ? (
@@ -209,7 +215,7 @@ const ManualPayment = ({ plan, onClose }) => {
             </button>
 
             <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-              Payments with the exact amount are verified instantly. After submitting, log out and log back in.
+              Proof of payment is required. Admin will review and activate your premium.
             </p>
           </form>
         )}

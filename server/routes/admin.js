@@ -9,6 +9,7 @@ const Contact = require('../models/Contact');
 const PaymentConfig = require('../models/PaymentConfig');
 const PromoCode = require('../models/PromoCode');
 const { sendApprovalEmail, sendRejectionEmail } = require('../utils/emailService');
+const { PLANS } = require('../config/stripe');
 
 // All admin routes require auth + admin role
 router.use(protect, adminOnly);
@@ -348,8 +349,8 @@ router.put('/payments/:id/approve', async (req, res) => {
 
     // Activate premium
     const expiry = new Date();
-    if (payment.plan === 'weekly') expiry.setDate(expiry.getDate() + 7);
-    else expiry.setMonth(expiry.getMonth() + 1);
+    const planDays = PLANS[payment.plan]?.days || 30;
+    expiry.setDate(expiry.getDate() + planDays);
 
     await User.findByIdAndUpdate(payment.user, {
       isPremium: true,
