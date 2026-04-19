@@ -22,6 +22,8 @@ const DownloadTool = () => {
   const [showRating, setShowRating] = useState(false);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [progressStage, setProgressStage] = useState('');
   const videoRef = useRef(null);
   const sliderRef = useRef(null);
   const playerRef = useRef(null);
@@ -224,6 +226,45 @@ const DownloadTool = () => {
   const handleSliderUp = useCallback(() => {
     draggingRef.current = null;
   }, []);
+
+  useEffect(() => {
+    if (!downloading) {
+      if (progress > 0) {
+        setProgress(100);
+        setProgressStage('Complete!');
+        const t = setTimeout(() => { setProgress(0); setProgressStage(''); }, 1500);
+        return () => clearTimeout(t);
+      }
+      return;
+    }
+
+    setProgress(0);
+    setProgressStage('Extracting video info...');
+
+    const stages = [
+      { at: 5, pct: 8, label: 'Extracting video info...' },
+      { at: 10, pct: 15, label: 'Extracting video info...' },
+      { at: 15, pct: 20, label: 'Downloading video...' },
+      { at: 25, pct: 30, label: 'Downloading video...' },
+      { at: 40, pct: 45, label: 'Downloading video...' },
+      { at: 55, pct: 55, label: 'Processing & converting...' },
+      { at: 70, pct: 65, label: 'Processing & converting...' },
+      { at: 90, pct: 75, label: 'Processing & converting...' },
+      { at: 120, pct: 82, label: 'Finalizing...' },
+      { at: 150, pct: 88, label: 'Finalizing...' },
+      { at: 200, pct: 92, label: 'Almost there...' },
+      { at: 260, pct: 95, label: 'Almost there...' },
+    ];
+
+    const timers = stages.map(s =>
+      setTimeout(() => {
+        setProgress(s.pct);
+        setProgressStage(s.label);
+      }, s.at * 1000)
+    );
+
+    return () => timers.forEach(clearTimeout);
+  }, [downloading]);
 
   useEffect(() => {
     window.addEventListener('mousemove', handleSliderMove);
@@ -505,23 +546,54 @@ const DownloadTool = () => {
           </div>
 
           {/* Download button */}
-          <button
-            onClick={handleDownload}
-            disabled={downloading || !selectedQuality}
-            className="btn-primary w-full py-4 text-lg flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {downloading ? (
-              <>
-                <div className="w-6 h-6 border-2 border-dark-900 border-t-transparent rounded-full animate-spin" />
-                <span>Processing...</span>
-              </>
-            ) : (
-              <>
-                <FiDownload size={22} />
-                <span>Download {format.toUpperCase()}</span>
-              </>
+          <div className="space-y-3">
+            <button
+              onClick={handleDownload}
+              disabled={downloading || !selectedQuality}
+              className="btn-primary w-full py-4 text-lg flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {downloading ? (
+                <>
+                  <div className="w-6 h-6 border-2 border-dark-900 border-t-transparent rounded-full animate-spin" />
+                  <span>Processing...</span>
+                </>
+              ) : (
+                <>
+                  <FiDownload size={22} />
+                  <span>Download {format.toUpperCase()}</span>
+                </>
+              )}
+            </button>
+
+            {/* Progress bar */}
+            {(downloading || progress === 100) && (
+              <div className="card p-4 animate-slide-up">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {progressStage}
+                  </span>
+                  <span className="text-sm font-bold text-primary-600 dark:text-primary-400">
+                    {progress}%
+                  </span>
+                </div>
+                <div className="w-full h-3 bg-gray-200 dark:bg-dark-700 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-1000 ease-out ${
+                      progress === 100
+                        ? 'bg-green-500'
+                        : 'bg-gradient-to-r from-primary-500 to-primary-700'
+                    }`}
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                {downloading && progress < 90 && (
+                  <p className="text-xs text-gray-400 mt-2">
+                    Please don't close this page while processing...
+                  </p>
+                )}
+              </div>
             )}
-          </button>
+          </div>
         </div>
       )}
 
