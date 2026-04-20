@@ -88,16 +88,35 @@
   }
 }
 
-/* Toast success color override — match website yellow theme */
+/* Toast color overrides — all match website yellow/dark theme */
 .Toastify__toast--success.Toastify__toast--colored {
   background: linear-gradient(135deg, #FDD835, #F57F17) !important;
   color: #1a1a2e !important;
 }
 
-.Toastify__toast--success .Toastify__progress-bar {
+.Toastify__toast--error.Toastify__toast--colored {
+  background: linear-gradient(135deg, #FDD835, #F57F17) !important;
+  color: #1a1a2e !important;
+}
+
+.Toastify__toast--info.Toastify__toast--colored {
+  background: linear-gradient(135deg, #FDD835, #F57F17) !important;
+  color: #1a1a2e !important;
+}
+
+.Toastify__toast--warning.Toastify__toast--colored {
+  background: linear-gradient(135deg, #FDD835, #F57F17) !important;
+  color: #1a1a2e !important;
+}
+
+.Toastify__toast.Toastify__toast--colored .Toastify__progress-bar {
   background: rgba(0, 0, 0, 0.2) !important;
 }
 
-.Toastify__toast--success .Toastify__close-button {
+.Toastify__toast.Toastify__toast--colored .Toastify__close-button {
   color: #1a1a2e !important;
+}
+
+.Toastify__toast.Toastify__toast--colored svg {
+  fill: #1a1a2e !important;
 }
