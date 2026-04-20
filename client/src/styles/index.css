@@ -87,3 +87,17 @@
     @apply px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24;
   }
 }
+
+/* Toast success color override — match website yellow theme */
+.Toastify__toast--success.Toastify__toast--colored {
+  background: linear-gradient(135deg, #FDD835, #F57F17) !important;
+  color: #1a1a2e !important;
+}
+
+.Toastify__toast--success .Toastify__progress-bar {
+  background: rgba(0, 0, 0, 0.2) !important;
+}
+
+.Toastify__toast--success .Toastify__close-button {
+  color: #1a1a2e !important;
+}

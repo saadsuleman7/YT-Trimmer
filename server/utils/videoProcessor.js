@@ -140,6 +140,7 @@ const downloadVideo = async (options) => {
       args.push('-f', `bestvideo[height<=${height}]/best[height<=${height}]`);
     } else {
       args.push('-f', `bestvideo[height<=${height}]+bestaudio/best[height<=${height}]`);
+      args.push('--merge-output-format', 'mp4');
     }
   }
 
@@ -166,12 +167,14 @@ const downloadVideo = async (options) => {
 
   const downloadedFile = path.join(DOWNLOADS_DIR, files[0]);
 
-  if (format !== 'mp3' && (fps || mute)) {
+  const needsFfmpeg = format !== 'mp3' && (mute || (fps && fps !== 24 && fps !== 30));
+
+  if (needsFfmpeg) {
     const ffmpegArgs = ['-i', downloadedFile];
     if (mute) {
       ffmpegArgs.push('-an');
     } else {
-      ffmpegArgs.push('-c:a', 'copy');
+      ffmpegArgs.push('-c:a', 'aac', '-b:a', '192k');
     }
     ffmpegArgs.push('-c:v', 'libx264', '-preset', 'medium', '-crf', '18');
     if (fps) ffmpegArgs.push('-r', String(fps));
@@ -183,24 +186,6 @@ const downloadVideo = async (options) => {
       console.error('ffmpeg error:', err.message || err);
       try { fs.unlinkSync(downloadedFile); } catch {}
       throw new Error('Video processing failed');
-    }
-
-    try { fs.unlinkSync(downloadedFile); } catch {}
-  } else if (fps && format !== 'mp3') {
-    const ffmpegArgs = [
-      '-i', downloadedFile,
-      '-c:v', 'libx264', '-preset', 'medium', '-crf', '18',
-      '-r', String(fps),
-      '-c:a', 'copy',
-      '-y', outputFile,
-    ];
-
-    try {
-      await runCommand('ffmpeg', ffmpegArgs, { timeout: 300000 });
-    } catch (err) {
-      console.error('ffmpeg fps error:', err.message || err);
-      try { fs.unlinkSync(downloadedFile); } catch {}
-      throw new Error('FPS conversion failed');
     }
 
     try { fs.unlinkSync(downloadedFile); } catch {}

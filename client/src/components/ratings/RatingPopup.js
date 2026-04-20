@@ -3,6 +3,20 @@ import { toast } from 'react-toastify';
 import api from '../../utils/api';
 import { FiStar, FiX } from 'react-icons/fi';
 
+const RATING_STORAGE_KEY = 'yt_rating_dismissed';
+
+const shouldShowRating = () => {
+  const stored = localStorage.getItem(RATING_STORAGE_KEY);
+  if (!stored) return true;
+  const { timestamp } = JSON.parse(stored);
+  const daysSince = (Date.now() - timestamp) / (1000 * 60 * 60 * 24);
+  return daysSince >= 7;
+};
+
+const dismissRating = () => {
+  localStorage.setItem(RATING_STORAGE_KEY, JSON.stringify({ timestamp: Date.now() }));
+};
+
 const RatingPopup = ({ onClose }) => {
   const [stars, setStars] = useState(0);
   const [hoverStars, setHoverStars] = useState(0);
@@ -10,6 +24,16 @@ const RatingPopup = ({ onClose }) => {
   const [guestName, setGuestName] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  if (!shouldShowRating()) {
+    onClose();
+    return null;
+  }
+
+  const handleDontAskAgain = () => {
+    dismissRating();
+    onClose();
+  };
 
   const handleSubmit = async () => {
     if (stars === 0) {
@@ -21,6 +45,7 @@ const RatingPopup = ({ onClose }) => {
     try {
       await api.post('/ratings', { stars, comment, guestName: guestName || 'Anonymous' });
       setSubmitted(true);
+      dismissRating();
       toast.success('Thank you for your feedback!');
       setTimeout(onClose, 2000);
     } catch (err) {
@@ -42,8 +67,8 @@ const RatingPopup = ({ onClose }) => {
 
         {submitted ? (
           <div className="text-center py-4">
-            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FiStar size={28} className="text-green-500" />
+            <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FiStar size={28} className="text-primary-500" />
             </div>
             <h3 className="text-xl font-bold mb-2">Thank You!</h3>
             <p className="text-gray-600 dark:text-gray-400">Your feedback helps us improve.</p>
@@ -125,6 +150,13 @@ const RatingPopup = ({ onClose }) => {
                 )}
               </button>
             </div>
+
+            <button
+              onClick={handleDontAskAgain}
+              className="w-full text-center text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 mt-3 transition-colors"
+            >
+              Don't ask again
+            </button>
           </>
         )}
       </div>
