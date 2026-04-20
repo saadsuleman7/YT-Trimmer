@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/((?!api|static|logo|manifest|robots|sitemap|llms|ai).*)", "destination": "/index.html" }
+  ]
+}
