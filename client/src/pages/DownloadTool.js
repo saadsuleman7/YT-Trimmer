@@ -312,8 +312,8 @@ const DownloadTool = () => {
       </div>
 
       {/* URL Input */}
-      <div className="card p-6 mb-6">
-        <div className="flex gap-3">
+      <div className="card p-4 sm:p-6 mb-6">
+        <div className="flex flex-col sm:flex-row gap-3">
           <input
             type="url"
             value={url}
@@ -325,7 +325,7 @@ const DownloadTool = () => {
           <button
             onClick={fetchMetadata}
             disabled={loading}
-            className="btn-primary flex items-center space-x-2 whitespace-nowrap"
+            className="btn-primary flex items-center justify-center space-x-2 whitespace-nowrap"
           >
             {loading ? (
               <div className="w-5 h-5 border-2 border-dark-900 border-t-transparent rounded-full animate-spin" />
