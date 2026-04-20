@@ -4,7 +4,7 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs');
 const geoip = require('geoip-lite');
-const { downloadVideo } = require('../utils/videoProcessor');
+const { downloadVideo, deleteFile } = require('../utils/videoProcessor');
 const { optionalAuth, protect } = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const Download = require('../models/Download');
@@ -20,9 +20,10 @@ router.post('/start', optionalAuth, [
   body('fps').optional().isNumeric(),
   body('title').optional().isString(),
   body('thumbnail').optional().isString(),
+  body('mute').optional().isBoolean(),
 ], validate, async (req, res) => {
   try {
-    const { url, format, quality, trimStart, trimEnd, fps, title, thumbnail } = req.body;
+    const { url, format, quality, trimStart, trimEnd, fps, title, thumbnail, mute } = req.body;
 
     const isPremium = req.user?.isPremium || false;
     const requestedHeight = parseInt(quality, 10) || 720;
@@ -74,6 +75,7 @@ router.post('/start', optionalAuth, [
       trimStart,
       trimEnd,
       fps: isPremium ? requestedFps : Math.min(requestedFps, 24),
+      mute: format !== 'mp3' ? !!mute : false,
     });
 
     // Update download record
@@ -117,6 +119,26 @@ router.get('/file/:filename', (req, res) => {
   res.setHeader('Content-Type', contentType);
   res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
   res.sendFile(filePath);
+});
+
+// DELETE /api/downloads/file/:filename — cleanup on demand
+router.delete('/file/:filename', (req, res) => {
+  const filename = path.basename(req.params.filename);
+  if (filename.includes('..') || filename.includes('/')) {
+    return res.status(400).json({ error: 'Invalid filename' });
+  }
+  deleteFile(filename);
+  res.json({ message: 'File deleted' });
+});
+
+// POST /api/downloads/cleanup/:filename — for sendBeacon on page close
+router.post('/cleanup/:filename', (req, res) => {
+  const filename = path.basename(req.params.filename);
+  if (filename.includes('..') || filename.includes('/')) {
+    return res.status(400).json({ error: 'Invalid filename' });
+  }
+  deleteFile(filename);
+  res.json({ message: 'File deleted' });
 });
 
 // GET /api/downloads/history

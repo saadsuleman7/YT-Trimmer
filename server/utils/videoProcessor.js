@@ -117,7 +117,7 @@ const fetchMetadata = async (url) => {
 };
 
 const downloadVideo = async (options) => {
-  const { url, quality, format, trimStart, trimEnd, fps } = options;
+  const { url, quality, format, trimStart, trimEnd, fps, mute } = options;
 
   const sanitized = sanitizeUrl(url);
   if (!sanitized) {
@@ -136,7 +136,11 @@ const downloadVideo = async (options) => {
     args.push('-x', '--audio-format', 'mp3');
   } else {
     const height = parseInt(quality, 10) || 720;
-    args.push('-f', `bestvideo[height<=${height}]+bestaudio/best[height<=${height}]`);
+    if (mute) {
+      args.push('-f', `bestvideo[height<=${height}]/best[height<=${height}]`);
+    } else {
+      args.push('-f', `bestvideo[height<=${height}]+bestaudio/best[height<=${height}]`);
+    }
   }
 
   if (needsTrim) {
@@ -162,7 +166,27 @@ const downloadVideo = async (options) => {
 
   const downloadedFile = path.join(DOWNLOADS_DIR, files[0]);
 
-  if (fps && format !== 'mp3') {
+  if (format !== 'mp3' && (fps || mute)) {
+    const ffmpegArgs = ['-i', downloadedFile];
+    if (mute) {
+      ffmpegArgs.push('-an');
+    } else {
+      ffmpegArgs.push('-c:a', 'copy');
+    }
+    ffmpegArgs.push('-c:v', 'libx264', '-preset', 'medium', '-crf', '18');
+    if (fps) ffmpegArgs.push('-r', String(fps));
+    ffmpegArgs.push('-y', outputFile);
+
+    try {
+      await runCommand('ffmpeg', ffmpegArgs, { timeout: 300000 });
+    } catch (err) {
+      console.error('ffmpeg error:', err.message || err);
+      try { fs.unlinkSync(downloadedFile); } catch {}
+      throw new Error('Video processing failed');
+    }
+
+    try { fs.unlinkSync(downloadedFile); } catch {}
+  } else if (fps && format !== 'mp3') {
     const ffmpegArgs = [
       '-i', downloadedFile,
       '-c:v', 'libx264', '-preset', 'medium', '-crf', '18',
@@ -193,7 +217,7 @@ const downloadVideo = async (options) => {
 };
 
 const cleanupOldFiles = () => {
-  const maxAge = 5 * 60 * 1000;
+  const maxAge = 30 * 60 * 1000;
   const now = Date.now();
 
   fs.readdirSync(DOWNLOADS_DIR).forEach(file => {
@@ -207,6 +231,14 @@ const cleanupOldFiles = () => {
   });
 };
 
+const deleteFile = (fileName) => {
+  const safe = path.basename(fileName);
+  const filePath = path.join(DOWNLOADS_DIR, safe);
+  try {
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+  } catch {}
+};
+
 setInterval(cleanupOldFiles, 60 * 1000);
 
-module.exports = { fetchMetadata, downloadVideo, cleanupOldFiles };
+module.exports = { fetchMetadata, downloadVideo, cleanupOldFiles, deleteFile };

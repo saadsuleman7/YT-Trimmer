@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
-import { FiSearch, FiDownload, FiLock, FiMusic, FiFilm, FiClock, FiInfo } from 'react-icons/fi';
+import { FiSearch, FiDownload, FiLock, FiMusic, FiFilm, FiClock, FiInfo, FiVolume2, FiVolumeX } from 'react-icons/fi';
 import api from '../utils/api';
 import { formatTime, parseTime, isQualityLocked } from '../utils/helpers';
 import RatingPopup from '../components/ratings/RatingPopup';
@@ -20,6 +20,8 @@ const DownloadTool = () => {
   const [trimEnd, setTrimEnd] = useState(0);
   const [trimStartStr, setTrimStartStr] = useState('00:00:00');
   const [trimEndStr, setTrimEndStr] = useState('00:00:00');
+  const [mute, setMute] = useState(false);
+  const [currentFile, setCurrentFile] = useState(null);
   const [showRating, setShowRating] = useState(false);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
@@ -29,6 +31,29 @@ const DownloadTool = () => {
   const sliderRef = useRef(null);
   const playerRef = useRef(null);
   const draggingRef = useRef(null);
+
+  const deleteCurrentFile = useCallback((useBeacon = false) => {
+    if (currentFile) {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      if (useBeacon) {
+        navigator.sendBeacon(`${apiUrl}/api/downloads/cleanup/${currentFile}`);
+      } else {
+        api.delete(`/downloads/file/${currentFile}`).catch(() => {});
+      }
+      setCurrentFile(null);
+    }
+  }, [currentFile]);
+
+  useEffect(() => {
+    const handleUnload = () => {
+      if (currentFile) {
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+        navigator.sendBeacon(`${apiUrl}/api/downloads/cleanup/${currentFile}`);
+      }
+    };
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
+  }, [currentFile]);
 
   useEffect(() => {
     if (!videoData?.videoId || videoData.extractor !== 'Youtube') return;
@@ -74,6 +99,7 @@ const DownloadTool = () => {
       return;
     }
 
+    deleteCurrentFile();
     setLoading(true);
     setVideoData(null);
     setPlayerReady(false);
@@ -158,6 +184,7 @@ const DownloadTool = () => {
   const handleDownload = async () => {
     if (!videoData || !selectedQuality) return;
 
+    deleteCurrentFile();
     setDownloading(true);
     try {
       const res = await api.post('/downloads/start', {
@@ -169,7 +196,10 @@ const DownloadTool = () => {
         trimEnd,
         title: videoData.title,
         thumbnail: videoData.thumbnail,
+        mute: format === 'mp4' ? mute : false,
       });
+
+      setCurrentFile(res.data.fileName);
 
       const downloadUrl = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${res.data.downloadUrl}`;
       const link = document.createElement('a');
@@ -557,6 +587,39 @@ const DownloadTool = () => {
                     This video supports up to {videoData.maxVideoFps} FPS
                   </p>
                 )}
+              </div>
+            )}
+
+            {/* Audio toggle */}
+            {format === 'mp4' && (
+              <div className="mt-6">
+                <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">
+                  Audio
+                </label>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setMute(false)}
+                    className={`flex items-center space-x-2 px-5 py-3 rounded-xl font-medium transition-all ${
+                      !mute
+                        ? 'bg-gradient-primary text-dark-900 shadow-glow'
+                        : 'bg-gray-100 dark:bg-dark-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-dark-600'
+                    }`}
+                  >
+                    <FiVolume2 size={18} />
+                    <span>With Audio</span>
+                  </button>
+                  <button
+                    onClick={() => setMute(true)}
+                    className={`flex items-center space-x-2 px-5 py-3 rounded-xl font-medium transition-all ${
+                      mute
+                        ? 'bg-red-500 text-white shadow-md'
+                        : 'bg-gray-100 dark:bg-dark-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-dark-600'
+                    }`}
+                  >
+                    <FiVolumeX size={18} />
+                    <span>No Audio (Mute)</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
