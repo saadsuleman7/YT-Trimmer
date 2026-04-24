@@ -16,12 +16,11 @@ const paymentSchema = new mongoose.Schema({
   },
   plan: {
     type: String,
-    enum: ['weekly', 'monthly'],
     required: true,
   },
   method: {
     type: String,
-    enum: ['stripe', 'crypto', 'easypaisa', 'paypal', 'bank_transfer'],
+    enum: ['stripe', 'crypto', 'easypaisa', 'paypal', 'bank_transfer', 'upi'],
     required: true,
   },
   status: {

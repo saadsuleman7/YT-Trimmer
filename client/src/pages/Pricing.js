@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import api from '../utils/api';
-import { FiCheck, FiX, FiCreditCard, FiDollarSign, FiGift, FiArrowRight } from 'react-icons/fi';
+import { FiCheck, FiX, FiDollarSign, FiGift, FiArrowRight } from 'react-icons/fi';
 import ManualPayment from '../components/payment/ManualPayment';
+import PayPalCheckout from '../components/payment/PayPalCheckout';
 import AnimateIn from '../components/ui/AnimateIn';
 import SEO from '../components/SEO';
 
@@ -40,7 +41,7 @@ const PRICING_SCHEMAS = [
       {
         '@type': 'Question',
         name: 'What payment methods does YT-Trimmer accept?',
-        acceptedAnswer: { '@type': 'Answer', text: 'We accept Stripe (credit/debit cards), PayPal, Crypto, Easypaisa, and Bank Transfer. Manual payments require a screenshot proof reviewed within 24 hours.' },
+        acceptedAnswer: { '@type': 'Answer', text: 'We accept PayPal (automatic instant activation), Bank Transfer, and UPI. Bank and UPI payments require a screenshot proof reviewed within 24 hours.' },
       },
       {
         '@type': 'Question',
@@ -53,8 +54,8 @@ const PRICING_SCHEMAS = [
 
 const Pricing = () => {
   const { isAuthenticated, isPremium, updateUser } = useAuth();
-  const [loading, setLoading] = useState(null);
   const [showManual, setShowManual] = useState(null);
+  const [showPaypal, setShowPaypal] = useState(null);
   const [promoCode, setPromoCode] = useState('');
   const [redeemingPromo, setRedeemingPromo] = useState(false);
 
@@ -78,21 +79,12 @@ const Pricing = () => {
     }
   };
 
-  const handleStripeCheckout = async (plan) => {
+  const handlePayPal = (plan) => {
     if (!isAuthenticated) {
       toast.info('Please log in first');
       return;
     }
-
-    setLoading(plan);
-    try {
-      const res = await api.post('/payments/create-checkout', { plan });
-      window.location.href = res.data.url;
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to start checkout');
-    } finally {
-      setLoading(null);
-    }
+    setShowPaypal(plan);
   };
 
   const freeFeatures = [
@@ -133,25 +125,17 @@ const Pricing = () => {
     return (
       <div className="space-y-2">
         <button
-          onClick={() => handleStripeCheckout(planId)}
-          disabled={loading === planId}
+          onClick={() => handlePayPal(planId)}
           className="btn-primary w-full flex items-center justify-center space-x-2"
         >
-          {loading === planId ? (
-            <div className="w-5 h-5 border-2 border-dark-900 border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <>
-              <FiCreditCard size={16} />
-              <span>Pay with Card</span>
-            </>
-          )}
+          <span>Pay with PayPal</span>
         </button>
         <button
           onClick={() => setShowManual(planId)}
           className="btn-outline w-full flex items-center justify-center space-x-2 text-sm"
         >
           <FiDollarSign size={16} />
-          <span>Other Methods</span>
+          <span>Bank / UPI</span>
         </button>
       </div>
     );
@@ -316,9 +300,9 @@ const Pricing = () => {
       <AnimateIn type="fade" delay={300}>
         <div className="text-center mt-8">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            We accept Stripe (Cards), PayPal, Crypto, Easypaisa, and Bank Transfer.
+            We accept PayPal (automatic), Bank Transfer, and UPI.
             <br />
-            Manual payments require proof (screenshot) and are reviewed by admin.
+            Bank/UPI payments require proof (screenshot) and are reviewed by admin within 24 hours.
           </p>
         </div>
       </AnimateIn>
@@ -327,6 +311,13 @@ const Pricing = () => {
         <ManualPayment
           plan={showManual}
           onClose={() => setShowManual(null)}
+        />
+      )}
+
+      {showPaypal && (
+        <PayPalCheckout
+          plan={showPaypal}
+          onClose={() => setShowPaypal(null)}
         />
       )}
     </div>

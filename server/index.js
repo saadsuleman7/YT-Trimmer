@@ -48,6 +48,8 @@ app.use('/api/auth/', authLimiter);
 
 // Stripe webhook needs raw body - must be before express.json()
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+// PayPal webhook also uses JSON body but we verify signature via API call, so regular JSON is fine
+// (the verify-webhook-signature endpoint re-signs the event on our behalf)
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));

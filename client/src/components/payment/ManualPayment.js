@@ -22,20 +22,11 @@ const ManualPayment = ({ plan, onClose }) => {
   const price = `$${priceNum.toFixed(2)}`;
 
   const methods = [
-    { id: 'paypal', label: 'PayPal', icon: '💳' },
     { id: 'bank_transfer', label: 'Bank Transfer', icon: '🏦' },
     { id: 'upi', label: 'UPI', icon: '📱' },
   ];
 
   const paymentDetails = {
-    paypal: {
-      title: 'PayPal Payment',
-      lines: [
-        { label: 'PayPal Link', value: `https://www.paypal.me/Disha3007/${priceNum}`, isLink: true },
-        { label: 'PayPal Email', value: 'dishahingu3007@gmail.com' },
-      ],
-      note: `Click the link above to pay exactly ${price} via PayPal. After payment, paste your PayPal transaction ID below.`,
-    },
     bank_transfer: {
       title: 'Bank Transfer Details',
       lines: [
@@ -139,7 +130,7 @@ const ManualPayment = ({ plan, onClose }) => {
               <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                 Payment Method *
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {methods.map(m => (
                   <button
                     key={m.id}
