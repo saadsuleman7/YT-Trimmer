@@ -4,14 +4,14 @@
   "description": "Download and trim videos from YouTube and other platforms. Free up to 720p, premium for 4K.",
   "icons": [
     {
-      "src": "/logo-192.webp",
-      "type": "image/webp",
+      "src": "/logo-192.png",
+      "type": "image/png",
       "sizes": "192x192",
       "purpose": "any maskable"
     },
     {
-      "src": "/logo-512.webp",
-      "type": "image/webp",
+      "src": "/logo-512.png",
+      "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"
     }
