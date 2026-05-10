@@ -2,7 +2,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 
 const BASE_URL = 'https://yt-trimmer.com';
-const DEFAULT_OG_IMAGE = `${BASE_URL}/logo.png`;
+const DEFAULT_OG_IMAGE = `${BASE_URL}/logo.webp`;
 
 const SEO = ({
   title,
